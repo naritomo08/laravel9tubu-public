@@ -12,6 +12,7 @@
                     <th class="py-2 px-4 border-b">名前</th>
                     <th class="py-2 px-4 border-b">メール</th>
                     <th class="py-2 px-4 border-b">管理者</th>
+                    <th class="py-2 px-4 border-b">メール認証</th>
                     <th class="py-2 px-4 border-b">操作</th>
                 </tr>
             </thead>
@@ -22,6 +23,11 @@
                         <td class="py-2 px-4 border-b">{{ $user->email }}</td>
                         <td class="py-2 px-4 border-b text-center">
                             @if($user->is_admin)
+                                <span class="text-green-600 font-bold">✔</span>
+                            @endif
+                        </td>
+                        <td class="py-2 px-4 border-b text-center">
+                            @if($user->email_verified_at)
                                 <span class="text-green-600 font-bold">✔</span>
                             @endif
                         </td>
