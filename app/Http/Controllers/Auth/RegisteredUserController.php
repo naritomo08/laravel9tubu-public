@@ -51,7 +51,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($newUser);
 
-        $allUser = User::where('is_admin', false)->get();
+        $allUser = User::all();
         foreach ($allUser as $user) {
             $mailer->to($user->email)
                 ->send(new NewUserIntroduction($user, $newUser));
