@@ -48,7 +48,7 @@ class SendDailyTweetCountMail extends Command
     {
         $tweetCount = $this->tweetService->countYesterdayTweets();
 
-        $users = User::where('is_admin', false)->get();
+        $users = User::all();
 
         foreach ($users as $user) {
             $this->mailer->to($user->email)
