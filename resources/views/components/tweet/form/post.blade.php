@@ -18,7 +18,7 @@
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
         <p class="mt-2 text-sm text-gray-500">
-            4枚までで、トータル2MB
+            4枚までで、トータル1MB
         </p>
 
         <div class="flex flex-wrap justify-end">
