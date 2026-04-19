@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="{{ mix('/css/app.css') }}" rel="stylesheet">
     <script src="{{ mix('/js/app.js') }}" async defer></script>
+    <script src="{{ asset('/js/tweet-refresh.js') }}" defer></script>
     <title>{{ $title ?? 'つぶやきアプリ' }}</title>
     @stack('css')
 </head>

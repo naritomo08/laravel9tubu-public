@@ -12,7 +12,15 @@ class TweetService
 {
     public function getTweets()
     {
-        return Tweet::with('images')->orderBy('updated_at', 'DESC')->get();
+        return Tweet::with(['user', 'images'])->orderBy('updated_at', 'DESC')->get();
+    }
+
+    public function getTweetsNewerThan(int $tweetId)
+    {
+        return Tweet::with(['user', 'images'])
+            ->where('id', '>', $tweetId)
+            ->orderBy('id', 'DESC')
+            ->get();
     }
 
     // 自分のtweetかどうかをチェックするメソッド

@@ -36,6 +36,7 @@ require __DIR__.'/auth.php';
 //Route::get('/sample/{id}', [\App\Http\Controllers\Sample\IndexController::class, 'showId']);
 
 Route::get('/tweet', \App\Http\Controllers\Tweet\IndexController::class)->name('tweet.index');
+Route::get('/tweet/latest', \App\Http\Controllers\Tweet\LatestController::class)->name('tweet.latest');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tweet/create', \App\Http\Controllers\Tweet\CreateController::class)
         ->name('tweet.create');
