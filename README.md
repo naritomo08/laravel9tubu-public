@@ -22,7 +22,7 @@ https://github.com/naritomo08/laravel9tubu-public
 ## 事前準備
 
 mac+DockerCompose+vscode+gitでの環境を構築してること。
-*Windowsでもｗｓｌ２＋Ubuntuで実施可能。
+*Windowsでもwsl2＋Ubuntuで構築可能。
 
 ## 環境構築手順
 
