@@ -48,8 +48,15 @@ const setupTweetAutoRefresh = () => {
             const data = await response.json();
 
             if (data.html) {
-                items.insertAdjacentHTML('afterbegin', data.html);
-                window.Alpine?.initTree(items);
+                const template = document.createElement('template');
+                template.innerHTML = data.html.trim();
+                const insertedItems = Array.from(template.content.children);
+
+                items.prepend(template.content);
+
+                insertedItems.forEach((item) => {
+                    window.Alpine?.initTree(item);
+                });
             }
 
             if (Number(data.latest_id) > latestTweetId) {
