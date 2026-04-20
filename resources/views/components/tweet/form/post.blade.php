@@ -1,7 +1,12 @@
+@props([
+    'currentPage' => 1
+])
+
 @if(Auth::user() && Auth::user()->hasVerifiedEmail())
 <div class="p-4">
     <form action="{{ route('tweet.create') }}" method="post" enctype="multipart/form-data">
         @csrf
+        <input type="hidden" name="page" value="{{ $currentPage }}">
         <div class="mt-1">
             <textarea
                 name="tweet"

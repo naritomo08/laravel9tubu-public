@@ -15,10 +15,15 @@
         @endif
         @if(Auth::check() && Auth::user()->is_admin)
             <div class="mb-4 text-right">
-                <a href="/admin/users" style="color: #2563eb !important; text-decoration: underline; font-weight: bold; background: none; display: inline-block;">管理者画面</a>
+                <x-element.button-a :href="route('admin.users.index')">
+                    管理者画面
+                </x-element.button-a>
             </div>
         @endif
-        <x-tweet.form.post></x-tweet.form.post>
+        @if (session('feedback.success'))
+            <x-alert.success>{{ session('feedback.success') }}</x-alert.success>
+        @endif
+        <x-tweet.form.post :currentPage="$tweets->currentPage()"></x-tweet.form.post>
         <x-tweet.list :tweets="$tweets"></x-tweet.list>
     </x-layout.single>
 </x-layout>

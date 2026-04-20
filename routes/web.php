@@ -37,12 +37,18 @@ require __DIR__.'/auth.php';
 
 Route::get('/tweet', \App\Http\Controllers\Tweet\IndexController::class)->name('tweet.index');
 Route::get('/tweet/latest', \App\Http\Controllers\Tweet\LatestController::class)->name('tweet.latest');
+Route::get('/like/status', \App\Http\Controllers\Like\StatusController::class)->name('like.status');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tweet/create', \App\Http\Controllers\Tweet\CreateController::class)
         ->name('tweet.create');
     Route::get('/tweet/update/{tweetId}', \App\Http\Controllers\Tweet\Update\IndexController::class)->name('tweet.update.index');
     Route::put('/tweet/update/{tweetId}', \App\Http\Controllers\Tweet\Update\PutController::class)->name('tweet.update.put');
     Route::delete('/tweet/delete/{tweetId}', \App\Http\Controllers\Tweet\DeleteController::class)->name('tweet.delete');
+    Route::post('/like', \App\Http\Controllers\Like\LikeController::class)->name('like.toggle');
+
+    Route::get('/account', [\App\Http\Controllers\Account\AccountController::class, 'index'])->name('account.index');
+    Route::put('/account/password', [\App\Http\Controllers\Account\AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::delete('/account', [\App\Http\Controllers\Account\AccountController::class, 'destroy'])->name('account.destroy');
 });
 
 

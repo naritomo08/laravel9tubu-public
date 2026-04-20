@@ -3,24 +3,64 @@
 namespace App\Services;
 
 use App\Models\Tweet;
+use App\Models\Like;
 use Carbon\Carbon;
 use App\Models\Image;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class TweetService
 {
-    public function getTweets()
+    public const TWEETS_PER_PAGE = 50;
+
+    public function getTweets(): LengthAwarePaginator
     {
-        return Tweet::with(['user', 'images'])->orderBy('updated_at', 'DESC')->get();
+        $tweets = Tweet::with(['user', 'images', 'likes'])->orderBy('updated_at', 'DESC')->paginate(self::TWEETS_PER_PAGE);
+        $this->attachLikeAttributes($tweets->getCollection());
+        
+        return $tweets;
     }
 
     public function getTweetsNewerThan(int $tweetId)
     {
-        return Tweet::with(['user', 'images'])
+        $tweets = Tweet::with(['user', 'images', 'likes'])
             ->where('id', '>', $tweetId)
             ->orderBy('id', 'DESC')
             ->get();
+
+        $this->attachLikeAttributes($tweets);
+        
+        return $tweets;
+    }
+
+    public function getChangedTweets(array $tweetVersions)
+    {
+        if (empty($tweetVersions)) {
+            return collect();
+        }
+
+        $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->whereIn('id', array_keys($tweetVersions))
+            ->get()
+            ->filter(function ($tweet) use ($tweetVersions) {
+                return $tweet->updated_at->toJSON() !== ($tweetVersions[$tweet->id] ?? null);
+            })
+            ->values();
+
+        $this->attachLikeAttributes($tweets);
+
+        return $tweets;
+    }
+
+    private function attachLikeAttributes($tweets): void
+    {
+        $userId = Auth::id();
+        $tweets->each(function ($tweet) use ($userId) {
+            $tweet->is_liked = $userId ? $tweet->likes()->where('user_id', $userId)->exists() : false;
+            $tweet->like_count = $tweet->likes()->count();
+        });
     }
 
     // 自分のtweetかどうかをチェックするメソッド

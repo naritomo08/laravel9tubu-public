@@ -1,18 +1,29 @@
 @props([
     'tweets' => []
 ])
-@php($latestTweetId = is_iterable($tweets) ? collect($tweets)->max('id') : 0)
+@php($tweetItems = method_exists($tweets, 'getCollection') ? $tweets->getCollection() : collect($tweets))
+@php($latestTweetId = $tweetItems->max('id') ?? 0)
+@php($isFirstTweetPage = !method_exists($tweets, 'currentPage') || $tweets->currentPage() === 1)
+@php($currentPage = method_exists($tweets, 'currentPage') ? $tweets->currentPage() : 1)
 
 <div
     class="bg-white rounded-md shadow-lg mt-5 mb-5"
     data-tweet-list
     data-latest-url="{{ route('tweet.latest') }}"
+    data-like-status-url="{{ route('like.status') }}"
     data-latest-tweet-id="{{ $latestTweetId ?? 0 }}"
+    data-auto-refresh-enabled="{{ $isFirstTweetPage ? 'true' : 'false' }}"
 >
     <ul data-tweet-list-items>
-        <x-tweet.items :tweets="$tweets"></x-tweet.items>
+        <x-tweet.items :tweets="$tweets" :currentPage="$currentPage"></x-tweet.items>
     </ul>
 </div>
+
+@if(method_exists($tweets, 'links') && $tweets->hasPages())
+    <div class="mt-5 mb-5">
+        {{ $tweets->links() }}
+    </div>
+@endif
 
 <div x-data="{ imgModal : false, imgModalSrc : '' }">
     <div

@@ -25,8 +25,9 @@ class PutController extends Controller
         $tweet = Tweet::where('id', $request->id())->firstOrFail();
         $tweet->content = $request->tweet();
         $tweet->save();
+
         return redirect()
-            ->route('tweet.update.index', ['tweetId' => $tweet->id])
+            ->route('tweet.index', ['page' => $request->page()])
             ->with('feedback.success', "つぶやきを編集しました");
     }
 }

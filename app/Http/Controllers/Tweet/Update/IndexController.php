@@ -25,6 +25,10 @@ class IndexController extends Controller
         }
 
         $tweet = Tweet::where('id', $tweetId)->firstOrFail();
-        return view('tweet.update')->with('tweet', $tweet);
+        $returnPage = max(1, (int) $request->query('page', 1));
+
+        return view('tweet.update')
+            ->with('tweet', $tweet)
+            ->with('returnPage', $returnPage);
     }
 }

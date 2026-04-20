@@ -19,8 +19,11 @@ class DeleteController extends Controller
             throw new AccessDeniedHttpException();
         }
         $tweetService->deleteTweet($tweetId);
+        $lastPage = max(1, (int) ceil(Tweet::count() / TweetService::TWEETS_PER_PAGE));
+        $returnPage = min(max(1, (int) $request->input('page', 1)), $lastPage);
+
         return redirect()
-            ->route('tweet.index')
+            ->route('tweet.index', ['page' => $returnPage])
             ->with('feedback.success', "つぶやきを削除しました");
     }
 }

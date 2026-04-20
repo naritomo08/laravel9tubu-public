@@ -1,13 +1,12 @@
 @props([
-    'tweet'
+    'tweet',
+    'returnPage' => 1,
 ])
 <div class="p-4">
     <form action="{{ route('tweet.update.put', ['tweetId' => $tweet->id]) }}" method="post">
         @method('PUT')
         @csrf
-        @if (session('feedback.success'))
-        <x-alert.success>{{ session('feedback.success') }}</x-alert.success>
-        @endif
+        <input type="hidden" name="page" value="{{ $returnPage }}">
         <div class="mt-1">
             <textarea
                 name="tweet"

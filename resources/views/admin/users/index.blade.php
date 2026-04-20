@@ -3,8 +3,10 @@
         <h2 class="text-center text-blue-700 text-3xl font-bold mt-8 mb-8">
             ユーザー一覧
         </h2>
-            <div style="margin-bottom: 1em;">
-                <a href="/" style="text-decoration: underline; color: #3490dc;">トップに戻る</a>
+            <div class="mb-4">
+                <x-element.button-a :href="route('tweet.index')">
+                    トップに戻る
+                </x-element.button-a>
             </div>
         <table class="min-w-full bg-white border border-gray-200">
             <thead>
@@ -36,7 +38,9 @@
                                 <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="background:none;border:none;padding:0;color:#dc2626 !important;text-decoration:underline;cursor:pointer;font-weight:bold;display:inline-block;">削除</button>
+                                    <x-element.button theme="secondary">
+                                        削除
+                                    </x-element.button>
                                 </form>
                             @endif
                         </td>

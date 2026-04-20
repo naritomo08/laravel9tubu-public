@@ -26,7 +26,8 @@ class CreateRequest extends FormRequest
         return [
             'tweet' => 'required|max:140',
             'images' => 'array|max:4',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'page' => 'nullable|integer|min:1',
         ];
     }
     // Requestクラスのuser関数で今自分がログインしているユーザーが取得できる
@@ -42,5 +43,10 @@ class CreateRequest extends FormRequest
     public function images(): array
     {
         return $this->file('images', []);
+    }
+
+    public function page(): int
+    {
+        return max(1, (int) $this->input('page', 1));
     }
 }

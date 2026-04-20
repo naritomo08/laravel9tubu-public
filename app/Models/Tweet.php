@@ -17,4 +17,14 @@ class Tweet extends Model
     {
         return $this->belongsToMany(Image::class, 'tweet_images')->using(TweetImage::class);
     }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function likeCount(): int
+    {
+        return $this->likes()->count();
+    }
 }

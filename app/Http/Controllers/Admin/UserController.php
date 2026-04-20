@@ -26,6 +26,8 @@ class UserController extends Controller
         if (auth()->id() === $user->id) {
             return redirect()->route('admin.users.index')->with('error', '自分自身は削除できません');
         }
+        // いいねを先に削除（外部キー制約で自動削除されるが、明示的に削除）
+        $user->likes()->delete();
         // 関連ツイートも削除
         $user->tweets()->delete();
         $user->delete();

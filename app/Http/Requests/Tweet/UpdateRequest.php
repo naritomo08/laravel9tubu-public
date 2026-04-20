@@ -24,7 +24,8 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'tweet' => 'required|max:140'
+            'tweet' => 'required|max:140',
+            'page' => 'nullable|integer|min:1',
         ];
     }
 
@@ -35,5 +36,10 @@ class UpdateRequest extends FormRequest
     public function id(): int
     {
         return (int) $this->route('tweetId');
+    }
+
+    public function page(): int
+    {
+        return max(1, (int) $this->input('page', 1));
     }
 }

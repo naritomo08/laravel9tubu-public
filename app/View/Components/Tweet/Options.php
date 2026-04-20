@@ -8,11 +8,13 @@ class Options extends Component
 {
     private int $tweetId;
     private int $userId;
+    private ?int $currentPage;
 
-    public function __construct(int $tweetId, int $userId)
+    public function __construct(int $tweetId, int $userId, ?int $currentPage = null)
     {
         $this->tweetId = $tweetId;
         $this->userId = $userId;
+        $this->currentPage = $currentPage;
     }
 
     public function render()
@@ -24,6 +26,7 @@ class Options extends Component
         $isAllTweet = true; // 全てのTweetに対してtrue
         return view('components.tweet.options')
             ->with('tweetId', $this->tweetId)
+            ->with('currentPage', $this->currentPage)
             ->with('isMyTweet', $isMyTweet)
             ->with('isAdminTweet', $isAdminTweet)
             ->with('isUserTweet', $isUserTweet)
