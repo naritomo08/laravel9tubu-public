@@ -84,13 +84,13 @@ class AccountController extends Controller
             ]);
         }
 
+        Auth::guard('web')->logout();
+
         DB::transaction(function () use ($user) {
             $user->likes()->delete();
             $user->tweets()->delete();
             $user->delete();
         });
-
-        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

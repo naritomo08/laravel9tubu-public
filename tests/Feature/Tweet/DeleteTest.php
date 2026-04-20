@@ -26,6 +26,6 @@ class DeleteTest extends TestCase
 
         $response = $this->delete('/tweet/delete/' . $tweet->id);
 
-        $response->assertRedirect('/tweet');
+        $response->assertRedirect('/tweet?page=1');
     }
 }
