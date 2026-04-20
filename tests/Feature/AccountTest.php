@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Tweet;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -33,6 +35,68 @@ class AccountTest extends TestCase
         $this->actingAs($user)
             ->get('/account')
             ->assertRedirect('/verify-email');
+    }
+
+    public function test_verified_user_can_update_own_profile()
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+        ]);
+
+        $this->actingAs($user)
+            ->put('/account/profile', [
+                'name' => 'New Name',
+                'email' => 'old@example.com',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'New Name',
+            'email' => 'old@example.com',
+        ]);
+        $this->assertNotNull($user->refresh()->email_verified_at);
+    }
+
+    public function test_email_change_requires_verification_and_sends_notification()
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+        ]);
+
+        $this->actingAs($user)
+            ->put('/account/profile', [
+                'name' => 'New Name',
+                'email' => 'new@example.com',
+            ])
+            ->assertRedirect('/verify-email');
+
+        $user->refresh();
+
+        $this->assertSame('New Name', $user->name);
+        $this->assertSame('new@example.com', $user->email);
+        $this->assertNull($user->email_verified_at);
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    public function test_profile_update_requires_unique_name_and_email()
+    {
+        $otherUser = User::factory()->create([
+            'name' => 'Existing Name',
+            'email' => 'existing@example.com',
+        ]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->put('/account/profile', [
+                'name' => $otherUser->name,
+                'email' => $otherUser->email,
+            ])
+            ->assertSessionHasErrors(['name', 'email']);
     }
 
     public function test_verified_user_can_update_own_password()
@@ -81,12 +145,13 @@ class AccountTest extends TestCase
         $this->assertDatabaseMissing('tweets', ['user_id' => $user->id]);
     }
 
-    public function test_admin_account_screen_only_has_password_update()
+    public function test_admin_account_screen_does_not_have_delete_section()
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($admin)
             ->get('/account')
+            ->assertSee('プロフィール変更')
             ->assertSee('パスワード変更')
             ->assertDontSee('アカウント削除');
     }

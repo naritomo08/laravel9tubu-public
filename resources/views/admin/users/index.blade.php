@@ -8,6 +8,14 @@
                     トップに戻る
                 </x-element.button-a>
             </div>
+        @if (session('success'))
+            <x-alert.success>{{ session('success') }}</x-alert.success>
+        @endif
+        @if (session('error'))
+            <x-alert.error>{{ session('error') }}</x-alert.error>
+        @endif
+        <x-auth-validation-errors class="mb-4" :errors="$errors" />
+
         <table class="min-w-full bg-white border border-gray-200">
             <thead>
                 <tr>
@@ -22,7 +30,16 @@
                 @foreach($users as $user)
                     <tr>
                         <td class="py-2 px-4 border-b">{{ $user->name }}</td>
-                        <td class="py-2 px-4 border-b">{{ $user->email }}</td>
+                        <td class="py-2 px-4 border-b">
+                            <form method="POST" action="{{ route('admin.users.email.update', $user->id) }}" class="flex items-center gap-2">
+                                @csrf
+                                @method('PUT')
+                                <x-input class="block w-full" type="email" name="email" value="{{ $user->email }}" required />
+                                <x-element.button>
+                                    変更
+                                </x-element.button>
+                            </form>
+                        </td>
                         <td class="py-2 px-4 border-b text-center">
                             @if($user->is_admin)
                                 <span class="text-green-600 font-bold">✔</span>

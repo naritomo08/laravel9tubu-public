@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/like', \App\Http\Controllers\Like\LikeController::class)->name('like.toggle');
 
     Route::get('/account', [\App\Http\Controllers\Account\AccountController::class, 'index'])->name('account.index');
+    Route::put('/account/profile', [\App\Http\Controllers\Account\AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/account/password', [\App\Http\Controllers\Account\AccountController::class, 'updatePassword'])->name('account.password.update');
     Route::delete('/account', [\App\Http\Controllers\Account\AccountController::class, 'destroy'])->name('account.destroy');
 });
@@ -55,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // 管理画面（ユーザー管理）
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
+    Route::put('/admin/users/{user}/email', [\App\Http\Controllers\Admin\UserController::class, 'updateEmail'])->name('admin.users.email.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 });
 

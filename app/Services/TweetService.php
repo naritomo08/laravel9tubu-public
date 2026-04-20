@@ -45,13 +45,24 @@ class TweetService
             ->whereIn('id', array_keys($tweetVersions))
             ->get()
             ->filter(function ($tweet) use ($tweetVersions) {
-                return $tweet->updated_at->toJSON() !== ($tweetVersions[$tweet->id] ?? null);
+                return $this->getTweetVersion($tweet) !== ($tweetVersions[$tweet->id] ?? null);
             })
             ->values();
 
         $this->attachLikeAttributes($tweets);
 
         return $tweets;
+    }
+
+    private function getTweetVersion(Tweet $tweet): string
+    {
+        $userUpdatedAt = $tweet->user?->updated_at;
+
+        if ($userUpdatedAt && $userUpdatedAt->gt($tweet->updated_at)) {
+            return $userUpdatedAt->toJSON();
+        }
+
+        return $tweet->updated_at->toJSON();
     }
 
     private function attachLikeAttributes($tweets): void

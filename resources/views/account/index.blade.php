@@ -17,6 +17,35 @@
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
         <div class="bg-white border border-gray-200 p-6 mb-8">
+            <h3 class="text-xl font-bold mb-4">プロフィール変更</h3>
+
+            <form method="POST" action="{{ route('account.profile.update') }}">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <x-label for="name" value="ユーザー名" />
+                    <x-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name', Auth::user()->name)" required autocomplete="name" />
+                </div>
+
+                <div class="mt-4">
+                    <x-label for="email" value="メールアドレス" />
+                    <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', Auth::user()->email)" required autocomplete="email" />
+                </div>
+
+                <p class="text-sm text-gray-700 mt-4">
+                    メールアドレスを変更した場合は、新しいメールアドレスの確認が必要です。
+                </p>
+
+                <div class="flex justify-end mt-6">
+                    <x-button>
+                        変更する
+                    </x-button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8">
             <h3 class="text-xl font-bold mb-4">パスワード変更</h3>
 
             <form method="POST" action="{{ route('account.password.update') }}">

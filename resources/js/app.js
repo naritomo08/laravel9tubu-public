@@ -30,9 +30,9 @@ const setupTweetAutoRefresh = () => {
     let loading = false;
 
     const getTweetVersions = () => Object.fromEntries(
-        Array.from(items.querySelectorAll('li[data-tweet-id][data-tweet-updated-at]'))
+        Array.from(items.querySelectorAll('li[data-tweet-id][data-tweet-version]'))
             .slice(0, 100)
-            .map((item) => [item.dataset.tweetId, item.dataset.tweetUpdatedAt])
+            .map((item) => [item.dataset.tweetId, item.dataset.tweetVersion])
     );
 
     const getTweetSortValue = (item) => ({
