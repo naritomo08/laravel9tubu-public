@@ -146,6 +146,65 @@ if (document.readyState === 'loading') {
     setupTweetAutoRefresh();
 }
 
+const setupEmailVerificationWatch = () => {
+    if (window.__tubuyakiEmailVerificationWatchStarted) {
+        return;
+    }
+
+    const target = document.querySelector('[data-email-verification-watch]');
+
+    if (!target) {
+        return;
+    }
+
+    window.__tubuyakiEmailVerificationWatchStarted = true;
+
+    const statusUrl = target.dataset.statusUrl;
+    const verifiedUrl = target.dataset.verifiedUrl || window.location.href;
+    let checking = false;
+
+    const checkVerification = async () => {
+        if (checking) {
+            return;
+        }
+
+        checking = true;
+
+        try {
+            const response = await fetch(statusUrl, {
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.verified) {
+                window.location.assign(verifiedUrl);
+            }
+        } finally {
+            checking = false;
+        }
+    };
+
+    window.setInterval(checkVerification, 5000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            checkVerification();
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupEmailVerificationWatch);
+} else {
+    setupEmailVerificationWatch();
+}
+
 // いいねボタンの処理
 const setupLikeButtons = () => {
     if (window.__tubuyakiLikeButtonsSetup) {

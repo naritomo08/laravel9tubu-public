@@ -4,7 +4,12 @@
             つぶやきアプリ
         </h2>
         @if(Auth::check() && !Auth::user()->hasVerifiedEmail())
-            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+            <div
+                class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
+                data-email-verification-watch
+                data-status-url="{{ route('verification.status') }}"
+                data-verified-url="{{ route('tweet.index', ['verified' => 1]) }}"
+            >
                 メール認証が完了していません。認証メールをご確認ください。<br>
                 <span class="text-red-600 font-bold">※メール認証が1時間以内に完了しない場合、アカウントは自動的に削除されます。</span>
                 <form method="POST" action="{{ route('verification.send') }}">

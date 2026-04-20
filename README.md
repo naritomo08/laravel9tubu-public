@@ -53,10 +53,16 @@ rm -rf .git
 git checkout devlop
 ```
 
+### 環境構築用のシェルスクリプトを実行する
+
+```bash
+chmod u+x build_env.sh && ./build_env.sh
+```
+
 ### .envファイルを編集する
 
 ```bash
-$ vi .env
+vi .env
 
 以下の内容に編集を行う。
 
@@ -64,13 +70,7 @@ APP_DEBUG = false
 QUEUE_CONNECTION=database
 ```
 
-### 環境構築用のシェルスクリプトを実行する
-
-```bash
-chmod u+x build_env.sh && ./build_env.sh
-```
-
-### ファイルパーミッションを更新する
+### ファイルパーミッションを更新する(MACでは不要)
 
 ```bash
 chmod u+x set_permission.sh &&  ./set_permission.sh
@@ -80,23 +80,29 @@ chmod u+x set_permission.sh &&  ./set_permission.sh
 
 ```bash
 PHPコンテナログイン
-$ docker-compose exec laravel_php /bin/bash
-$ cd project
+docker-compose exec laravel_php /bin/bash
+cd project
 
 *パブリック画面ファイル作成初回時以下のコマンドを実施
-$ chmod -R a+x node_modules
+chmod -R a+x node_modules
 
 パブリック画面ファイル作成
-$ npm run prod
+npm run prod
+
 つぶやき機能投稿画像参照リンク作成（新たに開発する場合は必要なし）
-$ php artisan storage:link
+php artisan storage:link
+
 Laracvelキャッシュクリア
-$ php artisan cache:clear
-$ php artisan config:clear
-$ php artisan route:clear
-$ php artisan view:clear
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+DB初期化
+php artisan migrate:fresh
+
 管理者アカウント設定
-$ php artisan db:seed --class=UsersSeeder
+php artisan db:seed --class=UsersSeeder
 ```
 
 ### 各種サイト確認する

@@ -25,6 +25,37 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_email_verification_status_returns_current_user_status()
+    {
+        $unverifiedUser = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+        $verifiedUser = User::factory()->create();
+
+        $this->actingAs($unverifiedUser)
+            ->getJson(route('verification.status'))
+            ->assertOk()
+            ->assertJson(['verified' => false]);
+
+        $this->actingAs($verifiedUser)
+            ->getJson(route('verification.status'))
+            ->assertOk()
+            ->assertJson(['verified' => true]);
+    }
+
+    public function test_tweet_screen_watches_email_verification_for_unverified_user()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertSee('data-email-verification-watch', false)
+            ->assertSee(route('verification.status'), false);
+    }
+
     public function test_email_can_be_verified()
     {
         $user = User::factory()->create([
