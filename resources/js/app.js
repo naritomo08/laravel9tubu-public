@@ -17,23 +17,36 @@ const setupTweetAutoRefresh = () => {
         return;
     }
 
-    if (list.dataset.autoRefreshEnabled === 'false') {
-        window.tweetAutoRefreshStarted = true;
-        return;
-    }
-
     window.tweetAutoRefreshStarted = true;
 
     const items = list.querySelector('[data-tweet-list-items]');
+    const topPagination = document.querySelector('[data-tweet-pagination-top]');
+    const bottomPagination = document.querySelector('[data-tweet-pagination-bottom]');
     const latestUrl = list.dataset.latestUrl;
+    const indexUrl = list.dataset.indexUrl || '/tweet';
+    const currentPage = Number(list.dataset.currentPage || 1);
     let latestTweetId = Number(list.dataset.latestTweetId || 0);
     let loading = false;
+
+    const redirectToFirstPage = () => {
+        const nextUrl = new URL(indexUrl, window.location.origin);
+        nextUrl.searchParams.set('page', '1');
+        window.location.assign(nextUrl.toString());
+    };
 
     const getTweetVersions = () => Object.fromEntries(
         Array.from(items.querySelectorAll('li[data-tweet-id][data-tweet-version]'))
             .slice(0, 100)
             .map((item) => [item.dataset.tweetId, item.dataset.tweetVersion])
     );
+
+    const getSnapshotSignature = () => [
+        Array.from(items.querySelectorAll('li[data-tweet-id]'))
+            .slice(0, 100)
+            .map((item) => item.dataset.tweetId)
+            .join(','),
+        items.querySelectorAll('li[data-tweet-id]').length,
+    ].join('|');
 
     const getTweetSortValue = (item) => ({
         updatedAt: Date.parse(item.dataset.tweetUpdatedAt || '') || 0,
@@ -84,6 +97,13 @@ const setupTweetAutoRefresh = () => {
         window.Alpine?.initTree(nextItem);
     };
 
+    const replaceAllTweetItems = (html) => {
+        items.innerHTML = html;
+        Array.from(items.children).forEach((item) => {
+            window.Alpine?.initTree(item);
+        });
+    };
+
     const refresh = async () => {
         if (loading) {
             return;
@@ -108,7 +128,21 @@ const setupTweetAutoRefresh = () => {
 
             const data = await response.json();
 
-            if (data.html) {
+            if (list.dataset.autoRefreshEnabled === 'false') {
+                if (typeof data.last_page === 'number' && currentPage > data.last_page) {
+                    redirectToFirstPage();
+                }
+
+                return;
+            }
+
+            const needsFullRefresh =
+                typeof data.snapshot_signature === 'string' &&
+                data.snapshot_signature !== getSnapshotSignature();
+
+            if (needsFullRefresh && typeof data.full_html === 'string') {
+                replaceAllTweetItems(data.full_html);
+            } else if (data.html) {
                 const template = document.createElement('template');
                 template.innerHTML = data.html.trim();
                 const insertedItems = Array.from(template.content.children);
@@ -123,7 +157,17 @@ const setupTweetAutoRefresh = () => {
                 replaceTweetItem(tweetId, html);
             });
 
-            if (Number(data.latest_id) > latestTweetId) {
+            if (typeof data.pagination_html === 'string') {
+                if (topPagination) {
+                    topPagination.innerHTML = data.pagination_html;
+                }
+
+                if (bottomPagination) {
+                    bottomPagination.innerHTML = data.pagination_html;
+                }
+            }
+
+            if (typeof data.latest_id === 'number') {
                 latestTweetId = Number(data.latest_id);
                 list.dataset.latestTweetId = latestTweetId;
             }

@@ -24,7 +24,7 @@ class CreateController extends Controller
             $request->images()
         );
        return redirect()
-           ->route('tweet.index', ['page' => $request->page()])
+           ->route('tweet.index', ['page' => 1])
            ->with('feedback.success', "つぶやきを投稿しました");
     }
 }

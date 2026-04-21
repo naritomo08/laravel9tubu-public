@@ -19,19 +19,36 @@ class LatestController extends Controller
         $tweets = $tweetService->getTweetsNewerThan((int) ($validated['after_id'] ?? 0));
         $tweetVersions = $this->decodeTweetVersions($validated['tweet_versions'] ?? null);
         $changedTweets = $tweetService->getChangedTweets($tweetVersions);
+        $firstPageTweets = $tweetService->getTweets(1);
+        $firstPageTweets->withPath(route('tweet.index'));
+        $fullListHtml = view('components.tweet.items', [
+            'tweets' => $firstPageTweets,
+            'currentPage' => 1,
+        ])->render();
+        $paginationHtml = $firstPageTweets->hasPages()
+            ? $firstPageTweets->links('components.pagination.tweets')->toHtml()
+            : '';
+        $snapshotSignature = implode(',', $firstPageTweets->getCollection()->pluck('id')->all())
+            . '|' . $firstPageTweets->total();
 
         return response()->json([
-            'latest_id' => $tweets->max('id') ?? (int) ($validated['after_id'] ?? 0),
+            'latest_id' => (int) ($firstPageTweets->getCollection()->max('id') ?? 0),
+            'last_page' => $firstPageTweets->lastPage(),
             'html' => view('components.tweet.items', [
                 'tweets' => $tweets,
+                'currentPage' => 1,
             ])->render(),
             'updated_html' => $changedTweets->mapWithKeys(function ($tweet) {
                 return [
                     (string) $tweet->id => view('components.tweet.item', [
                         'tweet' => $tweet,
+                        'currentPage' => 1,
                     ])->render(),
                 ];
             })->all(),
+            'full_html' => $fullListHtml,
+            'pagination_html' => $paginationHtml,
+            'snapshot_signature' => $snapshotSignature,
         ]);
     }
 

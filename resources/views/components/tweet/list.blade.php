@@ -9,21 +9,29 @@
 <div
     class="bg-white rounded-md shadow-lg mt-5 mb-5"
     data-tweet-list
+    data-current-page="{{ $currentPage }}"
+    data-index-url="{{ route('tweet.index') }}"
     data-latest-url="{{ route('tweet.latest') }}"
     data-like-status-url="{{ route('like.status') }}"
     data-latest-tweet-id="{{ $latestTweetId ?? 0 }}"
     data-auto-refresh-enabled="{{ $isFirstTweetPage ? 'true' : 'false' }}"
 >
+    <div class="px-4 pt-4" data-tweet-pagination-top>
+        @if(method_exists($tweets, 'links') && $tweets->hasPages())
+            {{ $tweets->links('components.pagination.tweets') }}
+        @endif
+    </div>
+
     <ul data-tweet-list-items>
         <x-tweet.items :tweets="$tweets" :currentPage="$currentPage"></x-tweet.items>
     </ul>
 </div>
 
-@if(method_exists($tweets, 'links') && $tweets->hasPages())
-    <div class="mt-5 mb-5">
-        {{ $tweets->links() }}
-    </div>
-@endif
+<div class="mt-5 mb-5" data-tweet-pagination-bottom>
+    @if(method_exists($tweets, 'links') && $tweets->hasPages())
+        {{ $tweets->links('components.pagination.tweets') }}
+    @endif
+</div>
 
 <div x-data="{ imgModal : false, imgModalSrc : '' }">
     <div
