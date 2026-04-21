@@ -92,10 +92,10 @@ http://127.0.0.1:8080/tweet
 http://127.0.0.1:8081
 
 * ログイン情報
-  - サーバ: laravel_db
-  - ユーザ名: laravel
-  - パスワード: password
-  - データベース: laravel
+  - サーバ: db
+  - ユーザ名: phper
+  - パスワード: secret
+  - データベース: laravel_local
 
 ### mailhog(メールサーバ)
 
@@ -176,7 +176,7 @@ php artisan dusk
 設定ファイル：
 
 ```bash
-database/seeeders/DatabaseSeeder.php
+database/seeeders/UsersSeeder.php
 ```
 
 適用：
