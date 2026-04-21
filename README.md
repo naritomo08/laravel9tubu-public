@@ -187,3 +187,41 @@ docker-compose up -d
 docker-compose exec app /bin/bash
 php artisan db:seed --class=UsersSeeder
 ```
+
+## 複数つぶやきをテスト的に入れたい場合
+
+以下のファイルで60件の画像リンク付き書き込みを追加できます。
+実施するたびに追記が可能。
+
+設定ファイル：
+
+```bash
+database/seeeders/TweetsSeeder.php
+```
+
+適用：
+
+```bash
+docker-compose build
+docker-compose up -d
+docker-compose exec app /bin/bash
+php artisan db:seed --class=TweetsSeeder
+```
+
+先ほど出したUsersSeederと同時に全消しして入れる場合
+
+```bash
+docker-compose exec app /bin/bash
+php artisan migrate:fresh
+php artisan db:seed
+```
+
+一旦消して初期状態にしたい場合は以下のようにする。
+UsersSeeder(管理者作成)は必ず適用すること。
+
+```bash
+docker-compose exec app /bin/bash
+rm -rf storage/app/public/images/*
+php artisan migrate:fresh
+php artisan db:seed --class=UsersSeeder
+```
