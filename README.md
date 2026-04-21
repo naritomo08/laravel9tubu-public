@@ -29,7 +29,7 @@ mac+DockerCompose+vscode+gitでの環境を構築してること。
 ### ベースリポジトリをクローンする
 
 ```bash
-git clone -b php8.2 https://github.com/naritomo08/laravel_docker.git laraveldocker
+git clone -b tubuyaki https://github.com/naritomo08/laravel_docker.git laraveldocker
 cd laraveldocker
 rm -rf .git
 git clone https://github.com/naritomo08/laravel9tubu-public.git backend
@@ -59,37 +59,13 @@ git checkout devlop
 chmod u+x build_env.sh && ./build_env.sh
 ```
 
-### .envファイルを編集する
-
-```bash
-vi .env
-
-以下の内容に編集を行う。
-
-APP_DEBUG = false
-QUEUE_CONNECTION=database
-```
-
-### ファイルパーミッションを更新する(MACでは不要)
-
-```bash
-chmod u+x set_permission.sh &&  ./set_permission.sh
-```
-
 ### サイト設定を行う
 
 ```bash
 PHPコンテナログイン
-docker-compose exec laravel_php /bin/bash
-cd project
+docker-compose exec app /bin/bash
 
-*パブリック画面ファイル作成初回時以下のコマンドを実施
-chmod -R a+x node_modules
-
-パブリック画面ファイル作成
-npm run prod
-
-つぶやき機能投稿画像参照リンク作成（新たに開発する場合は必要なし）
+つぶやき機能投稿画像参照リンク作成
 php artisan storage:link
 
 Laracvelキャッシュクリア
@@ -156,40 +132,35 @@ docker-compose down
 ### PHPコンテナ
 
 ```bash
-docker-compose exec laravel_php /bin/bash
+docker-compose exec app /bin/bash
 ```
 
 ### DBコンテナ
 
 ```bash
-docker-compose exec laravel_db /bin/bash
+docker-compose exec db /bin/bash
 ```
 
 ## その他
 
-開発中に以下のコマンドを実行してください。
+つぶやきサイトソース変更して反映したい際は以下コマンドを実施すること。
 
 ```bash
-docker-compose exec laravel_php /bin/bash
-cd project
-
-npm run watch
+docker-compose build
+docker-compose up -d
 ```
 
-### npm run watchコマンドとは
-
-npm run watchコマンドはターミナルで実行し続け、関連ファイル全部の変更を監視します。
-Webpackは変更を感知すると、アセットを自動的に再コンパイルします。
-
-## LaravelTest(CICDにいれる予定)
+## LaravelTest
 
 ```bash
 PHPコンテナで動かす。
-docker-compose exec laravel_php /bin/bash
+docker-compose exec app /bin/bash
 
 ユニットテスト
-cd project
 php artisan test
+
+ブラウザテスト
+php artisan dusk
 ```
 
 ## 管理者画面
@@ -213,7 +184,8 @@ database/seeeders/DatabaseSeeder.php
 適用：
 
 ```bash
-docker-compose exec laravel_php /bin/bash
-cd project
+docker-compose build
+docker-compose up -d
+docker-compose exec app /bin/bash
 php artisan db:seed --class=UsersSeeder
 ```
