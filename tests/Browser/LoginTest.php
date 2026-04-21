@@ -3,7 +3,6 @@
 namespace Tests\Browser;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
@@ -18,13 +17,15 @@ class LoginTest extends DuskTestCase
             try {
                 $user = User::factory()->create();
                 $browser->visit('/login')
-                        ->type('email', $user->email)
-                        ->type('password', 'password')
-                        ->press('LOG IN')
-                        ->assertPathIs('/tweet')
+                        ->waitFor('input[name="email"]')
+                        ->type('input[name="email"]', $user->email)
+                        ->type('input[name="password"]', 'password')
+                        ->click('button[type="submit"]')
+                        ->waitForLocation('/tweet')
+                        ->waitForText('つぶやきアプリ')
                         ->assertSee('つぶやきアプリ');
             } catch (\Exception $e) {
-                $browser->screenshot('login-test-error');  // エラー時にスクリーンショットを取得
+                $browser->screenshot('login-test-error');
                 throw $e;
             }
         });

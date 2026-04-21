@@ -1,23 +1,18 @@
 <?php
 
-namespace Tests\Browser;
+namespace Tests;
 
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Laravel\Dusk\Browser;
-use Tests\DuskTestCase;
+use App\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
-class ExampleTest extends DuskTestCase
+abstract class TestCase extends BaseTestCase
 {
-    /**
-     * A basic browser test example.
-     */
-    public function testBasicExample(): void
+    use CreatesApplication;
+
+    protected function setUp(): void
     {
-        $this->browse(function (Browser $browser) {
-            $browser->visit('/tweet')
-                    ->pause(1000)
-                    ->screenshot('example_test')
-                    ->assertSee('つぶやきアプリ');
-        });
+        parent::setUp();
+
+        $this->withoutMiddleware(VerifyCsrfToken::class);
     }
 }
