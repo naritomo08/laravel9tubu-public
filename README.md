@@ -81,9 +81,7 @@ php artisan migrate:fresh
 php artisan db:seed --class=UsersSeeder
 ```
 
-### 各種サイト確認する
-
-## サイトURL
+## 各種サイト確認する
 
 ### laravel
 
