@@ -115,6 +115,7 @@ const setupTweetAutoRefresh = () => {
             const url = new URL(latestUrl, window.location.origin);
             url.searchParams.set('after_id', latestTweetId);
             url.searchParams.set('tweet_versions', JSON.stringify(getTweetVersions()));
+            url.searchParams.set('include_snapshot', '1');
 
             const response = await fetch(url.toString(), {
                 headers: {

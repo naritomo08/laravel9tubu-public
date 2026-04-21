@@ -26,10 +26,13 @@ class LatestTest extends TestCase
 
         $response = $this->getJson('/tweet/latest?after_id=' . $oldTweet->id);
 
+        $html = (string) $response->json('html');
+
         $response->assertOk()
-            ->assertJsonPath('latest_id', $newTweet->id)
-            ->assertSee('new tweet')
-            ->assertDontSee('old tweet');
+            ->assertJsonPath('latest_id', $newTweet->id);
+
+        $this->assertStringContainsString('new tweet', $html);
+        $this->assertStringNotContainsString('old tweet', $html);
     }
 
     public function test_latest_returns_updated_tweet_when_user_name_changed()
@@ -60,10 +63,13 @@ class LatestTest extends TestCase
             ]),
         ]));
 
+        $updatedHtml = implode('', $response->json('updated_html', []));
+
         $response->assertOk()
-            ->assertJsonPath('latest_id', $tweet->id)
-            ->assertSee('New Name')
-            ->assertSee('same tweet')
-            ->assertDontSee('Old Name');
+            ->assertJsonPath('latest_id', $tweet->id);
+
+        $this->assertStringContainsString('New Name', $updatedHtml);
+        $this->assertStringContainsString('same tweet', $updatedHtml);
+        $this->assertStringNotContainsString('Old Name', $updatedHtml);
     }
 }

@@ -14,6 +14,7 @@ class LatestController extends Controller
         $validated = $request->validate([
             'after_id' => ['nullable', 'integer', 'min:0'],
             'tweet_versions' => ['nullable', 'string'],
+            'include_snapshot' => ['nullable', 'boolean'],
         ]);
 
         $tweets = $tweetService->getTweetsNewerThan((int) ($validated['after_id'] ?? 0));
@@ -21,15 +22,19 @@ class LatestController extends Controller
         $changedTweets = $tweetService->getChangedTweets($tweetVersions);
         $firstPageTweets = $tweetService->getTweets(1);
         $firstPageTweets->withPath(route('tweet.index'));
-        $fullListHtml = view('components.tweet.items', [
-            'tweets' => $firstPageTweets,
-            'currentPage' => 1,
-        ])->render();
+        $includeSnapshot = $request->boolean('include_snapshot');
         $paginationHtml = $firstPageTweets->hasPages()
             ? $firstPageTweets->links('components.pagination.tweets')->toHtml()
             : '';
-        $snapshotSignature = implode(',', $firstPageTweets->getCollection()->pluck('id')->all())
-            . '|' . $firstPageTweets->total();
+        $fullListHtml = $includeSnapshot
+            ? view('components.tweet.items', [
+                'tweets' => $firstPageTweets,
+                'currentPage' => 1,
+            ])->render()
+            : null;
+        $snapshotSignature = $includeSnapshot
+            ? implode(',', $firstPageTweets->getCollection()->pluck('id')->all()) . '|' . $firstPageTweets->total()
+            : null;
 
         return response()->json([
             'latest_id' => (int) ($firstPageTweets->getCollection()->max('id') ?? 0),
