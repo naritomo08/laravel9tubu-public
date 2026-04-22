@@ -5,11 +5,11 @@
 @php($tweetVersion = $tweet->user?->updated_at?->gt($tweet->updated_at) ? $tweet->user->updated_at : $tweet->updated_at)
 
 <li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3" data-tweet-id="{{ $tweet->id }}" data-tweet-updated-at="{{ $tweet->updated_at->toJSON() }}" data-tweet-version="{{ $tweetVersion->toJSON() }}">
-    <div class="min-w-0 flex-1">
+    <div class="min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%;">
         <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs mb-2">
             {{ $tweet->user->name }}
         </span>
-        <p class="text-gray-600 whitespace-pre-wrap break-all">{!! nl2br(e($tweet->content)) !!}</br>
+        <p class="text-gray-600 whitespace-pre-wrap break-all" style="white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;">{!! nl2br(e($tweet->content)) !!}</br>
         {!! nl2br(e($tweet->updated_at)) !!}</p>
         <x-tweet.images :images="$tweet->images"/>
     </div>
