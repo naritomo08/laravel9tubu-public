@@ -9,8 +9,8 @@
         <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs mb-2">
             {{ $tweet->user->name }}
         </span>
-        <p class="text-gray-600 whitespace-pre-wrap break-all" style="white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;">{!! nl2br(e($tweet->content)) !!}</br>
-        {!! nl2br(e($tweet->updated_at)) !!}</p>
+        <p class="text-gray-600 break-all" style="overflow-wrap: anywhere; word-break: break-word;">{!! nl2br(e($tweet->content)) !!}</p>
+        <p class="text-gray-600 mt-1">{{ $tweet->updated_at }}</p>
         <x-tweet.images :images="$tweet->images"/>
     </div>
     <div class="shrink-0 flex items-center gap-2">
