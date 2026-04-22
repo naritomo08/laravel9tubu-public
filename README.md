@@ -161,6 +161,56 @@ php artisan test
 php artisan dusk
 ```
 
+### テストコマンドごとの実行対象
+
+- `php artisan test`
+  - `tests/Unit`
+  - `tests/Feature`
+- `php artisan dusk`
+  - `tests/Browser`
+
+#### php artisan test で実行されるテスト
+
+```bash
+tests/Unit/ExampleTest.php
+tests/Unit/Services/TweetServiceTest.php
+tests/Feature/AccountTest.php
+tests/Feature/Admin/UserManagementTest.php
+tests/Feature/Auth/AuthenticationTest.php
+tests/Feature/Auth/EmailVerificationTest.php
+tests/Feature/Auth/PasswordConfirmationTest.php
+tests/Feature/Auth/PasswordResetTest.php
+tests/Feature/Auth/RegistrationTest.php
+tests/Feature/ExampleTest.php
+tests/Feature/Tweet/DeleteTest.php
+tests/Feature/Tweet/LatestTest.php
+```
+
+| ファイル | テスト概要 |
+| --- | --- |
+| `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
+| `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
+| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者によるユーザーEmail更新、重複Emailのバリデーション、非管理者の操作拒否を検証。 |
+| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、誤パスワードでログイン失敗を検証。 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、署名付きURLでの認証成功/失敗を検証。 |
+| `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
+| `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
+| `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
+| `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
+| `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移することを検証。 |
+| `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名更新時の差分HTML返却を検証。 |
+
+#### php artisan dusk で実行されるテスト
+
+```bash
+tests/Browser/LoginTest.php
+```
+
+| ファイル | テスト概要 |
+| --- | --- |
+| `tests/Browser/LoginTest.php` | ブラウザでログイン操作を行い、`/tweet` への遷移と表示文言を確認するE2Eテスト。 |
+
 ## 管理者画面
 
 管理者画面にアクセスしたい際は
