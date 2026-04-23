@@ -279,3 +279,18 @@ rm -rf storage/app/public/images/*
 php artisan migrate:fresh
 php artisan db:seed --class=UsersSeeder
 ```
+
+## つぶやき数通知メール時間変更
+
+```bash
+vi backend/app/Console/Kernel.php
+
+以下の行の時刻部分を書き換える。
+    protected function schedule(Schedule $schedule)
+    {
+        $schedule->command('mail:send-daily-tweet-count-mail')
+            ->dailyAt('7:00');
+        $schedule->command('users:delete-unverified')->everyMinute();
+    }
+
+```
