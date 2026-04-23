@@ -2,30 +2,28 @@
 
 namespace Tests\Unit\Services;
 
-use PHPUnit\Framework\TestCase;
+use App\Models\Tweet;
+use App\Models\User;
 use App\Services\TweetService;
-use Mockery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class TweetServiceTest extends TestCase
 {
-    /**
-      * @runInSeparateProcess
-      * @return void
-      */
-    public function test_check_own_tweet()
-    {
-        $tweetService = new TweetService();
+    use RefreshDatabase;
 
-        $mock = Mockery::mock('alias:App\Models\Tweet');
-        $mock->shouldReceive('where->first')->andReturn((object)[
-            'id' => 1,
-            'user_id' => 1
+    public function test_check_own_tweet(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
         ]);
 
-        $result = $tweetService->checkOwnTweet(1, 1);
-        $this->assertTrue($result);
+        $tweetService = new TweetService();
 
-        $result = $tweetService->checkOwnTweet(2, 1);
-        $this->assertFalse($result);
+        $this->assertTrue($tweetService->checkOwnTweet($user->id, $tweet->id));
+        $this->assertFalse($tweetService->checkOwnTweet($otherUser->id, $tweet->id));
+        $this->assertFalse($tweetService->checkOwnTweet($user->id, $tweet->id + 1));
     }
 }

@@ -9,7 +9,7 @@
         <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs mb-2 dark:bg-gray-800 dark:text-gray-300">
             {{ $tweet->user->name }}
         </span>
-        <p class="text-gray-600 break-all dark:text-gray-200" style="overflow-wrap: anywhere; word-break: break-word;">{!! nl2br(e($tweet->content)) !!}</p>
+        <p class="text-gray-600 break-all dark:text-gray-200" style="overflow-wrap: anywhere; word-break: break-word;">{!! $tweet->formatted_content !!}</p>
         <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $tweet->updated_at }}</p>
         <x-tweet.images :images="$tweet->images"/>
     </div>
