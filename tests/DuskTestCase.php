@@ -29,6 +29,10 @@ abstract class DuskTestCase extends BaseTestCase
     {
         $options = (new ChromeOptions)->addArguments(collect([
             $this->shouldStartMaximized() ? '--start-maximized' : '--window-size=1920,1080',
+            '--disable-dev-shm-usage',
+            '--disable-extensions',
+            '--disable-software-rasterizer',
+            '--no-sandbox',
         ])->unless($this->hasHeadlessDisabled(), function (Collection $items) {
             return $items->merge([
                 '--disable-gpu',
@@ -39,6 +43,7 @@ abstract class DuskTestCase extends BaseTestCase
         $capabilities = DesiredCapabilities::chrome()->setCapability(
             ChromeOptions::CAPABILITY, $options
         );
+        $capabilities->setCapability('pageLoadStrategy', 'eager');
 
         // タイムアウトの設定を追加
         $capabilities->setCapability('timeouts', [
@@ -61,6 +66,17 @@ abstract class DuskTestCase extends BaseTestCase
     protected function baseUrl()
     {
         return 'http://web';  // 'web' は Docker Compose のサービス名
+    }
+
+    /**
+     * Disable Dusk's automatic failure screenshots.
+     *
+     * The remote Chromium container can time out while capturing screenshots,
+     * which hides the original test failure we need to debug.
+     */
+    protected function captureFailuresFor($browsers)
+    {
+        return;
     }
 
     /**
