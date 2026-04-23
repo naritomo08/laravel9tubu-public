@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Like;
+use App\Models\Tweet;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -11,10 +15,19 @@ class UserController extends Controller
 {
     public function index()
     {
-        $admin = User::where('is_admin', true)->get();
-        $users = User::where('is_admin', false)->orderBy('name')->get();
-        $allUsers = $admin->concat($users);
-        return view('admin.users.index', ['users' => $allUsers]);
+        $users = $this->getUsersWithStats();
+
+        return view('admin.users.index', [
+            'users' => $users,
+            'stats' => $this->buildStatsPayload($users),
+        ]);
+    }
+
+    public function stats(): JsonResponse
+    {
+        $users = $this->getUsersWithStats();
+
+        return response()->json($this->buildStatsPayload($users));
     }
 
     public function updateEmail(Request $request, User $user)
@@ -60,5 +73,39 @@ class UserController extends Controller
         $user->tweets()->delete();
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'ユーザーを削除しました');
+    }
+
+    private function getUsersWithStats(): Collection
+    {
+        return User::query()
+            ->withCount('tweets')
+            ->addSelect([
+                'received_likes_count' => Like::query()
+                    ->selectRaw('count(*)')
+                    ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
+                    ->whereColumn('tweets.user_id', 'users.id'),
+            ])
+            ->orderByDesc('is_admin')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function buildStatsPayload(Collection $users): array
+    {
+        return [
+            'totals' => [
+                'label' => 'トータル',
+                'tweet_count' => Tweet::count(),
+                'like_count' => Like::count(),
+            ],
+            'users' => $users->map(function (User $user): array {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'tweet_count' => (int) $user->tweets_count,
+                    'like_count' => (int) ($user->received_likes_count ?? 0),
+                ];
+            })->values()->all(),
+        ];
     }
 }

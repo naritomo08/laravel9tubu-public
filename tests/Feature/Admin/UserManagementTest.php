@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Like;
+use App\Models\Tweet;
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,5 +64,65 @@ class UserManagementTest extends TestCase
             ->assertForbidden();
 
         $this->assertSame('old@example.com', $targetUser->refresh()->email);
+    }
+
+    public function test_admin_stats_are_displayed_on_user_management_screen()
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'name' => '管理者']);
+        $user = User::factory()->create(['name' => 'ユーザー1']);
+        $otherUser = User::factory()->create(['name' => 'ユーザー2']);
+
+        $tweet1 = Tweet::factory()->create(['user_id' => $user->id]);
+        $tweet2 = Tweet::factory()->create(['user_id' => $user->id]);
+        $tweet3 = Tweet::factory()->create(['user_id' => $otherUser->id]);
+
+        Like::create(['user_id' => $admin->id, 'tweet_id' => $tweet1->id]);
+        Like::create(['user_id' => $otherUser->id, 'tweet_id' => $tweet1->id]);
+        Like::create(['user_id' => $admin->id, 'tweet_id' => $tweet3->id]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('つぶやき・いいね集計')
+            ->assertSee('トータル')
+            ->assertSee('ユーザー1')
+            ->assertSee('ユーザー2')
+            ->assertSeeInOrder(['トータル', '3', '3'])
+            ->assertSeeInOrder(['ユーザー1', '2', '2'])
+            ->assertSeeInOrder(['ユーザー2', '1', '1']);
+    }
+
+    public function test_admin_can_fetch_stats_json()
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'name' => '管理者']);
+        $user = User::factory()->create(['name' => 'ユーザー1']);
+        $tweet = Tweet::factory()->create(['user_id' => $user->id]);
+
+        Like::create(['user_id' => $admin->id, 'tweet_id' => $tweet->id]);
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.users.stats'))
+            ->assertOk()
+            ->assertJson([
+                'totals' => [
+                    'label' => 'トータル',
+                    'tweet_count' => 1,
+                    'like_count' => 1,
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'ユーザー1',
+                'tweet_count' => 1,
+                'like_count' => 1,
+            ]);
+    }
+
+    public function test_non_admin_can_not_fetch_stats_json()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->getJson(route('admin.users.stats'))
+            ->assertForbidden();
     }
 }

@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // 管理画面（ユーザー管理）
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/stats', [\App\Http\Controllers\Admin\UserController::class, 'stats'])->name('admin.users.stats');
     Route::put('/admin/users/{user}/email', [\App\Http\Controllers\Admin\UserController::class, 'updateEmail'])->name('admin.users.email.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 });
