@@ -14,16 +14,20 @@ class DailyTweetCount extends Mailable implements ShouldQueue
 
     public User $toUser;
     public int $count;
+    public int $userTweetCount;
+    public int $userLikeCount;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(User $toUser, int $count)
+    public function __construct(User $toUser, int $count, int $userTweetCount, int $userLikeCount)
     {
         $this->toUser = $toUser;
         $this->count = $count;
+        $this->userTweetCount = $userTweetCount;
+        $this->userLikeCount = $userLikeCount;
     }
 
     /**

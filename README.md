@@ -189,6 +189,7 @@ tests/Feature/Auth/RegistrationTest.php
 tests/Feature/ExampleTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
+tests/Feature/Console/SendDailyTweetCountMailTest.php
 ```
 
 | ファイル | テスト概要 |
@@ -206,6 +207,7 @@ tests/Feature/Tweet/LatestTest.php
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移することを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名更新時の差分HTML返却を検証。 |
+| `tests/Feature/Console/SendDailyTweetCountMailTest` | 日時送付メールの検証。 |
 
 #### php artisan dusk で実行されるテスト
 

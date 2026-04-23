@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\DailyTweetCount;
+use App\Models\Like;
 use App\Models\User;
 use App\Services\TweetService;
 use Illuminate\Console\Command;
@@ -48,11 +49,24 @@ class SendDailyTweetCountMail extends Command
     {
         $tweetCount = $this->tweetService->countYesterdayTweets();
 
-        $users = User::all();
+        $users = User::query()
+            ->withCount('tweets')
+            ->addSelect([
+                'received_likes_count' => Like::query()
+                    ->selectRaw('count(*)')
+                    ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
+                    ->whereColumn('tweets.user_id', 'users.id'),
+            ])
+            ->get();
 
         foreach ($users as $user) {
             $this->mailer->to($user->email)
-                ->send(new DailyTweetCount($user, $tweetCount));
+                ->send(new DailyTweetCount(
+                    $user,
+                    $tweetCount,
+                    (int) $user->tweets_count,
+                    (int) ($user->received_likes_count ?? 0)
+                ));
         }
 
         return 0;
