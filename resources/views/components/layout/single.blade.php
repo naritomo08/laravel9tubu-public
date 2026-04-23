@@ -1,7 +1,10 @@
 <div class="flex justify-center">
     <div class="max-w-screen-sm w-full">
+        <div class="flex justify-end p-4">
+            <x-theme-toggle />
+        </div>
         @auth
-            <div class="flex justify-end items-center gap-3 p-4">
+            <div class="flex justify-end items-center gap-3 px-4 pb-4">
                 @if(Auth::user()->hasVerifiedEmail())
                     <x-element.button-a :href="route('account.index')">
                         アカウント設定
@@ -14,7 +17,7 @@
                     </x-element.button>
                 </form>
             </div>
-            <div class="px-4 py-2 text-lg font-semibold text-blue-700">
+            <div class="px-4 py-2 text-lg font-semibold text-blue-700 dark:text-blue-300">
                 ようこそ{{ Auth::user()->name }}さん
             </div>
         @endauth

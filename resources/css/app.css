@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .dark .bg-white {
+        background-color: rgb(17 24 39 / var(--tw-bg-opacity, 1));
+    }
+
+    .dark .bg-gray-50,
+    .dark .bg-gray-100 {
+        background-color: rgb(3 7 18 / var(--tw-bg-opacity, 1));
+    }
+
+    .dark .border-gray-100,
+    .dark .border-gray-200,
+    .dark .border-gray-300 {
+        border-color: rgb(31 41 55 / var(--tw-border-opacity, 1));
+    }
+
+    .dark .text-black,
+    .dark .text-gray-900,
+    .dark .text-gray-800,
+    .dark .text-gray-700,
+    .dark .text-gray-600 {
+        color: rgb(243 244 246 / var(--tw-text-opacity, 1));
+    }
+
+    .dark .text-gray-500,
+    .dark .text-gray-400 {
+        color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+    }
+}

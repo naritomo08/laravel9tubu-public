@@ -11,10 +11,10 @@
             <textarea
                 name="tweet"
                 rows="3"
-                class="focus:ring-blue-400 focus:border-blue-400 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
+                class="focus:ring-blue-400 focus:border-blue-400 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
                 placeholder="つぶやきを入力"></textarea>
         </div>
-        <p class="mt-2 text-sm text-gray-500">
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             140文字まで
         </p>
         <x-tweet.form.images></x-tweet.form.images>
@@ -22,7 +22,7 @@
         @error('tweet')
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
-        <p class="mt-2 text-sm text-gray-500">
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             4枚までで、トータル1MB
         </p>
 

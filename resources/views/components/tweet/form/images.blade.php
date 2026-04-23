@@ -1,9 +1,9 @@
 <div x-data="inputFormHandler()" class="my-2">
     <template x-for="(field, i) in fields" :key="i">
         <div class="w-full flex my-2">
-            <label :for="field.id" class="border border-gray-300 rounded-md p-2 w-full bg-white cursor-pointer">
+            <label :for="field.id" class="border border-gray-300 rounded-md p-2 w-full bg-white cursor-pointer dark:border-gray-700 dark:bg-gray-900">
                 <input type="file" accept="image/*" class="sr-only" :id="field.id" name="images[]" @change="fields[i].file = $event.target.files[0]">
-                <span x-text="field.file ? field.file.name : '画像を選択'" class="text-gray-700"></span>
+                <span x-text="field.file ? field.file.name : '画像を選択'" class="text-gray-700 dark:text-gray-200"></span>
             </label>
             <button type="reset" @click="removeField(i)" class="p-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 20 20" fill="currentColor">

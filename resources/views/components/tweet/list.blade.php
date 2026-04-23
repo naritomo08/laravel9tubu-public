@@ -7,7 +7,7 @@
 @php($currentPage = method_exists($tweets, 'currentPage') ? $tweets->currentPage() : 1)
 
 <div
-    class="bg-white rounded-md shadow-lg mt-5 mb-5"
+    class="bg-white rounded-md shadow-lg mt-5 mb-5 dark:bg-gray-900 dark:shadow-gray-950/40"
     data-tweet-list
     data-current-page="{{ $currentPage }}"
     data-index-url="{{ route('tweet.index') }}"

@@ -10,6 +10,15 @@
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
+        <script>
+            (() => {
+                try {
+                    const theme = localStorage.getItem('theme') || 'light';
+                    document.documentElement.classList.toggle('dark', theme === 'dark');
+                } catch (error) {}
+            })();
+        </script>
+
         <!-- Styles -->
         <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
@@ -17,7 +26,7 @@
         <script src="{{ mix('js/app.js') }}" defer></script>
     </head>
     <body>
-        <div class="font-sans text-gray-900 antialiased">
+        <div class="font-sans text-gray-900 antialiased dark:text-gray-100">
             @yield('content', $slot ?? '')
         </div>
     </body>

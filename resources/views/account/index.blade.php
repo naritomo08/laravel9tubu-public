@@ -16,7 +16,7 @@
 
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
-        <div class="bg-white border border-gray-200 p-6 mb-8">
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">プロフィール変更</h3>
 
             <form method="POST" action="{{ route('account.profile.update') }}">
@@ -33,7 +33,7 @@
                     <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', Auth::user()->email)" required autocomplete="email" />
                 </div>
 
-                <p class="text-sm text-gray-700 mt-4">
+                <p class="text-sm text-gray-700 mt-4 dark:text-gray-300">
                     メールアドレスを変更した場合は、新しいメールアドレスの確認が必要です。
                 </p>
 
@@ -45,7 +45,7 @@
             </form>
         </div>
 
-        <div class="bg-white border border-gray-200 p-6 mb-8">
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">パスワード変更</h3>
 
             <form method="POST" action="{{ route('account.password.update') }}">
@@ -76,9 +76,9 @@
         </div>
 
         @if(!Auth::user()->is_admin)
-            <div class="bg-white border border-red-200 p-6 mb-8">
+            <div class="bg-white border border-red-200 p-6 mb-8 dark:border-red-900 dark:bg-gray-900">
                 <h3 class="text-xl font-bold text-red-700 mb-4">アカウント削除</h3>
-                <p class="text-sm text-gray-700 mb-4">
+                <p class="text-sm text-gray-700 mb-4 dark:text-gray-300">
                     アカウントを削除すると、投稿といいねも削除されます。削除後はログアウトしてトップに戻ります。
                 </p>
 
