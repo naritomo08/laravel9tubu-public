@@ -286,6 +286,7 @@ php artisan db:seed --class=UsersSeeder
 vi backend/app/Console/Kernel.php
 
 以下の行の時刻部分を書き換える。
+
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('mail:send-daily-tweet-count-mail')
@@ -293,4 +294,11 @@ vi backend/app/Console/Kernel.php
         $schedule->command('users:delete-unverified')->everyMinute();
     }
 
+```
+
+上記定期動作をローカルで動くようにしたい場合、以下のコマンドをcronなどで
+毎分定期的に動かす必要がある。(テスト実施の場合、上記の設定を調整し任意に実行してもよい。)
+
+```bash
+docker-compose exec -T app php artisan schedule:run
 ```
