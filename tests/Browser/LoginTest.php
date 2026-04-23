@@ -6,8 +6,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Dusk\Browser;
 use RuntimeException;
+use Throwable;
 use Tests\DuskTestCase;
 
 class LoginTest extends DuskTestCase
@@ -19,21 +21,15 @@ class LoginTest extends DuskTestCase
     {
         $connection = $this->configureDuskApplicationDatabaseConnection();
         $password = 'password';
-        $user = User::on($connection)->create([
-            'name' => 'Dusk Login User',
-            'email' => 'dusk-login-'.uniqid().'@example.com',
-            'password' => Hash::make($password),
-            'email_verified_at' => now(),
-            'remember_token' => null,
-            'is_admin' => false,
-        ]);
+        $email = 'dusk-login-'.uniqid().'@example.com';
+        $users = $this->createDuskUsers($connection, $email, $password);
 
         try {
-            $this->browse(function (Browser $browser) use ($connection, $user, $password) {
+            $this->browse(function (Browser $browser) use ($connection, $email, $password) {
                 try {
                     $browser->visit('/login')
                             ->waitFor('input[name="email"]')
-                            ->type('input[name="email"]', $user->email)
+                            ->type('input[name="email"]', $email)
                             ->type('input[name="password"]', $password)
                             ->click('@login-button')
                             ->waitUntilMissing('input[name="email"]', 15)
@@ -45,7 +41,7 @@ class LoginTest extends DuskTestCase
                         implode("\n", [
                             'Login Dusk test failed.',
                             'Current URL: '.$browser->driver->getCurrentURL(),
-                            'Created user email: '.$user->email,
+                            'Created user email: '.$email,
                             'Created user DB: '.$this->describeConnection($connection),
                             'Page text:',
                             mb_substr($this->getPageText($browser), 0, 1000),
@@ -56,9 +52,41 @@ class LoginTest extends DuskTestCase
                 }
             });
         } finally {
-            $user->delete();
-            DB::connection($connection)->disconnect();
+            foreach ($users as $user) {
+                $user->delete();
+                DB::connection($user->getConnectionName())->disconnect();
+            }
         }
+    }
+
+    /**
+     * Create the login user in candidate databases because Dusk's CLI process
+     * and the web-facing PHP-FPM process can be configured differently.
+     */
+    private function createDuskUsers(string $primaryConnection, string $email, string $password): array
+    {
+        $users = [];
+
+        foreach (array_unique([$primaryConnection, $this->configureLocalApplicationDatabaseConnection()]) as $connection) {
+            if (!$this->hasUsersTable($connection)) {
+                continue;
+            }
+
+            $users[] = User::on($connection)->create([
+                'name' => 'Dusk Login User',
+                'email' => $email,
+                'password' => Hash::make($password),
+                'email_verified_at' => now(),
+                'remember_token' => null,
+                'is_admin' => false,
+            ]);
+        }
+
+        if (empty($users)) {
+            throw new RuntimeException('Could not create a Dusk login user because no candidate database has a users table.');
+        }
+
+        return $users;
     }
 
     private function configureDuskApplicationDatabaseConnection(): string
@@ -83,6 +111,38 @@ class LoginTest extends DuskTestCase
         ]);
 
         return $connection;
+    }
+
+    private function configureLocalApplicationDatabaseConnection(): string
+    {
+        $connection = 'dusk_local_application';
+
+        Config::set("database.connections.{$connection}", [
+            'driver' => 'mysql',
+            'host' => env('DUSK_LOCAL_DB_HOST', 'db'),
+            'port' => env('DUSK_LOCAL_DB_PORT', '3306'),
+            'database' => env('DUSK_LOCAL_DB_DATABASE', 'laravel_local'),
+            'username' => env('DUSK_LOCAL_DB_USERNAME', 'phper'),
+            'password' => env('DUSK_LOCAL_DB_PASSWORD', 'secret'),
+            'unix_socket' => '',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        return $connection;
+    }
+
+    private function hasUsersTable(string $connection): bool
+    {
+        try {
+            return Schema::connection($connection)->hasTable('users');
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     private function getApplicationProcessEnvironment(): array
