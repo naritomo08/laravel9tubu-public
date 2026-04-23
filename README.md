@@ -177,6 +177,7 @@ php artisan dusk
 
 ```bash
 tests/Unit/ExampleTest.php
+tests/Unit/Services/TweetTest.php
 tests/Unit/Services/TweetServiceTest.php
 tests/Feature/AccountTest.php
 tests/Feature/Admin/UserManagementTest.php
@@ -194,6 +195,7 @@ tests/Feature/Tweet/LatestTest.php
 | --- | --- |
 | `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
+| `tests/Unit/Services/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
 | `tests/Feature/Admin/UserManagementTest.php` | 管理者によるユーザーEmail更新、重複Emailのバリデーション、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、誤パスワードでログイン失敗を検証。 |
