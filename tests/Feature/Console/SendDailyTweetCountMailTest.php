@@ -22,8 +22,11 @@ class SendDailyTweetCountMailTest extends TestCase
         $recipient = User::factory()->create([
             'name' => '山田太郎',
             'email' => 'recipient@example.com',
+            'email_verified_at' => now(),
         ]);
-        $otherUser = User::factory()->create();
+        $otherUser = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
         $liker = User::factory()->create();
 
         $recipientTweet1 = Tweet::factory()->create(['user_id' => $recipient->id]);
@@ -70,5 +73,39 @@ class SendDailyTweetCountMailTest extends TestCase
         $this->assertSame(3, $otherUserMail->count);
         $this->assertSame(1, $otherUserMail->userTweetCount);
         $this->assertSame(1, $otherUserMail->userLikeCount);
+    }
+
+    public function test_daily_tweet_count_mail_is_not_sent_to_unverified_users()
+    {
+        $verifiedUser = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+        $unverifiedUser = User::factory()->unverified()->create();
+
+        $sentMailables = [];
+        $mailer = Mockery::mock(Mailer::class);
+        $mailer->shouldReceive('to')->once()->with($verifiedUser->email)->andReturnSelf();
+        $mailer->shouldReceive('send')
+            ->once()
+            ->with(Mockery::on(function ($mailable) use (&$sentMailables) {
+                if (! $mailable instanceof DailyTweetCount) {
+                    return false;
+                }
+
+                $sentMailables[] = $mailable;
+
+                return true;
+            }));
+
+        $command = new SendDailyTweetCountMail(
+            app(TweetService::class),
+            $mailer
+        );
+
+        $command->handle();
+
+        $this->assertCount(1, $sentMailables);
+        $this->assertTrue($sentMailables[0]->toUser->is($verifiedUser));
+        $this->assertFalse($sentMailables[0]->toUser->is($unverifiedUser));
     }
 }

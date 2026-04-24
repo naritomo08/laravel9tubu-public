@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -154,6 +155,49 @@ class AccountTest extends TestCase
             ->assertSee('プロフィール変更')
             ->assertSee('パスワード変更')
             ->assertDontSee('アカウント削除');
+    }
+
+    public function test_account_screen_displays_own_stats()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $ownTweetA = Tweet::factory()->create(['user_id' => $user->id]);
+        $ownTweetB = Tweet::factory()->create(['user_id' => $user->id]);
+        $otherTweet = Tweet::factory()->create(['user_id' => $otherUser->id]);
+
+        Like::create(['tweet_id' => $ownTweetA->id, 'user_id' => $otherUser->id]);
+        Like::create(['tweet_id' => $ownTweetB->id, 'user_id' => $otherUser->id]);
+        Like::create(['tweet_id' => $otherTweet->id, 'user_id' => $user->id]);
+
+        $this->actingAs($user)
+            ->get('/account')
+            ->assertOk()
+            ->assertSee('あなたのつぶやき・いいね集計')
+            ->assertSee('あなたの集計')
+            ->assertSee('2')
+            ->assertSee('2');
+    }
+
+    public function test_account_stats_endpoint_returns_authenticated_user_stats()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $ownTweetA = Tweet::factory()->create(['user_id' => $user->id]);
+        $ownTweetB = Tweet::factory()->create(['user_id' => $user->id]);
+        $otherTweet = Tweet::factory()->create(['user_id' => $otherUser->id]);
+
+        Like::create(['tweet_id' => $ownTweetA->id, 'user_id' => $otherUser->id]);
+        Like::create(['tweet_id' => $ownTweetB->id, 'user_id' => $otherUser->id]);
+        Like::create(['tweet_id' => $otherTweet->id, 'user_id' => $user->id]);
+
+        $this->actingAs($user)
+            ->getJson('/account/stats')
+            ->assertOk()
+            ->assertExactJson([
+                'label' => 'あなたの集計',
+                'tweet_count' => 2,
+                'like_count' => 2,
+            ]);
     }
 
     public function test_admin_can_not_delete_own_account()

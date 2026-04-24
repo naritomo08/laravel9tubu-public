@@ -50,6 +50,7 @@ class SendDailyTweetCountMail extends Command
         $tweetCount = $this->tweetService->countYesterdayTweets();
 
         $users = User::query()
+            ->whereNotNull('email_verified_at')
             ->withCount('tweets')
             ->addSelect([
                 'received_likes_count' => Like::query()

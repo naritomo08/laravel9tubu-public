@@ -17,6 +17,29 @@
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="text-xl font-bold mb-4">あなたのつぶやき・いいね集計</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-account-stats-table data-stats-url="{{ route('account.stats') }}">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">対象</th>
+                            <th class="py-2 px-4 border-b text-right dark:border-gray-700">つぶやき数</th>
+                            <th class="py-2 px-4 border-b text-right dark:border-gray-700">いいね数</th>
+                        </tr>
+                    </thead>
+                    <tbody data-account-stats-body>
+                        <tr class="bg-blue-50 font-bold dark:bg-gray-800">
+                            <td class="py-2 px-4 border-b dark:border-gray-700">{{ $stats['label'] }}</td>
+                            <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $stats['tweet_count'] }}</td>
+                            <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $stats['like_count'] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 dark:text-gray-400">自分の投稿数と、自分の投稿に付いたいいね総数を自動更新します。</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">プロフィール変更</h3>
 
             <form method="POST" action="{{ route('account.profile.update') }}">
@@ -100,4 +123,52 @@
             </div>
         @endif
     </x-layout.single>
+
+    <script>
+        (() => {
+            const table = document.querySelector('[data-account-stats-table]');
+            const body = document.querySelector('[data-account-stats-body]');
+
+            if (!table || !body) {
+                return;
+            }
+
+            const escapeHtml = (value) => {
+                const div = document.createElement('div');
+                div.textContent = value ?? '';
+                return div.innerHTML;
+            };
+
+            const renderRow = (stats) => {
+                body.innerHTML = `
+                    <tr class="bg-blue-50 font-bold dark:bg-gray-800">
+                        <td class="py-2 px-4 border-b dark:border-gray-700">${escapeHtml(stats.label)}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${stats.tweet_count}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${stats.like_count}</td>
+                    </tr>
+                `;
+            };
+
+            const refreshStats = async () => {
+                try {
+                    const response = await fetch(table.dataset.statsUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    renderRow(await response.json());
+                } catch (error) {
+                    console.error('Error refreshing account stats:', error);
+                }
+            };
+
+            window.setInterval(refreshStats, 15000);
+        })();
+    </script>
 </x-layout>

@@ -19,25 +19,25 @@
         <section class="mb-8">
             <h3 class="text-xl font-bold text-gray-800 mb-3">つぶやき・いいね集計</h3>
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200" data-admin-stats-table data-stats-url="{{ route('admin.users.stats') }}">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-stats-table data-stats-url="{{ route('admin.users.stats') }}">
                     <thead>
                         <tr>
-                            <th class="py-2 px-4 border-b text-left">対象</th>
-                            <th class="py-2 px-4 border-b text-right">つぶやき数</th>
-                            <th class="py-2 px-4 border-b text-right">いいね数</th>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">対象</th>
+                            <th class="py-2 px-4 border-b text-right dark:border-gray-700">つぶやき数</th>
+                            <th class="py-2 px-4 border-b text-right dark:border-gray-700">いいね数</th>
                         </tr>
                     </thead>
                     <tbody data-admin-stats-body>
-                        <tr class="bg-blue-50 font-bold">
-                            <td class="py-2 px-4 border-b">{{ $stats['totals']['label'] }}</td>
-                            <td class="py-2 px-4 border-b text-right">{{ $stats['totals']['tweet_count'] }}</td>
-                            <td class="py-2 px-4 border-b text-right">{{ $stats['totals']['like_count'] }}</td>
+                        <tr class="bg-blue-50 font-bold dark:bg-gray-800">
+                            <td class="py-2 px-4 border-b dark:border-gray-700">{{ $stats['totals']['label'] }}</td>
+                            <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $stats['totals']['tweet_count'] }}</td>
+                            <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $stats['totals']['like_count'] }}</td>
                         </tr>
                         @foreach($stats['users'] as $statUser)
                             <tr>
-                                <td class="py-2 px-4 border-b">{{ $statUser['name'] }}</td>
-                                <td class="py-2 px-4 border-b text-right">{{ $statUser['tweet_count'] }}</td>
-                                <td class="py-2 px-4 border-b text-right">{{ $statUser['like_count'] }}</td>
+                                <td class="py-2 px-4 border-b dark:border-gray-700">{{ $statUser['name'] }}</td>
+                                <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $statUser['tweet_count'] }}</td>
+                                <td class="py-2 px-4 border-b text-right dark:border-gray-700">{{ $statUser['like_count'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -48,21 +48,21 @@
 
         <section>
             <h3 class="text-xl font-bold text-gray-800 mb-3">ユーザー一覧</h3>
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
                 <thead>
                     <tr>
-                        <th class="py-2 px-4 border-b">名前</th>
-                        <th class="py-2 px-4 border-b">メール</th>
-                        <th class="py-2 px-4 border-b">管理者</th>
-                        <th class="py-2 px-4 border-b">メール認証</th>
-                        <th class="py-2 px-4 border-b">操作</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">名前</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">メール</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">管理者</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">メール認証</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">操作</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($users as $user)
                         <tr>
-                            <td class="py-2 px-4 border-b">{{ $user->name }}</td>
-                            <td class="py-2 px-4 border-b">
+                            <td class="py-2 px-4 border-b dark:border-gray-700">{{ $user->name }}</td>
+                            <td class="py-2 px-4 border-b dark:border-gray-700">
                                 <form method="POST" action="{{ route('admin.users.email.update', $user->id) }}" class="flex items-center gap-2">
                                     @csrf
                                     @method('PUT')
@@ -72,17 +72,17 @@
                                     </x-element.button>
                                 </form>
                             </td>
-                            <td class="py-2 px-4 border-b text-center">
+                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
                                 @if($user->is_admin)
                                     <span class="text-green-600 font-bold">✔</span>
                                 @endif
                             </td>
-                            <td class="py-2 px-4 border-b text-center">
+                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
                                 @if($user->email_verified_at)
                                     <span class="text-green-600 font-bold">✔</span>
                                 @endif
                             </td>
-                            <td class="py-2 px-4 border-b text-center">
+                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
                                 @if(!$user->is_admin)
                                     <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
                                         @csrf
@@ -117,18 +117,18 @@
 
             const renderRows = (stats) => {
                 const totalRow = `
-                    <tr class="bg-blue-50 font-bold">
-                        <td class="py-2 px-4 border-b">${escapeHtml(stats.totals.label)}</td>
-                        <td class="py-2 px-4 border-b text-right">${stats.totals.tweet_count}</td>
-                        <td class="py-2 px-4 border-b text-right">${stats.totals.like_count}</td>
+                    <tr class="bg-blue-50 font-bold dark:bg-gray-800">
+                        <td class="py-2 px-4 border-b dark:border-gray-700">${escapeHtml(stats.totals.label)}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${stats.totals.tweet_count}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${stats.totals.like_count}</td>
                     </tr>
                 `;
 
                 const userRows = stats.users.map((user) => `
                     <tr>
-                        <td class="py-2 px-4 border-b">${escapeHtml(user.name)}</td>
-                        <td class="py-2 px-4 border-b text-right">${user.tweet_count}</td>
-                        <td class="py-2 px-4 border-b text-right">${user.like_count}</td>
+                        <td class="py-2 px-4 border-b dark:border-gray-700">${escapeHtml(user.name)}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${user.tweet_count}</td>
+                        <td class="py-2 px-4 border-b text-right dark:border-gray-700">${user.like_count}</td>
                     </tr>
                 `).join('');
 

@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/like', \App\Http\Controllers\Like\LikeController::class)->name('like.toggle');
 
     Route::get('/account', [\App\Http\Controllers\Account\AccountController::class, 'index'])->name('account.index');
+    Route::get('/account/stats', [\App\Http\Controllers\Account\AccountController::class, 'stats'])->name('account.stats');
     Route::put('/account/profile', [\App\Http\Controllers\Account\AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/account/password', [\App\Http\Controllers\Account\AccountController::class, 'updatePassword'])->name('account.password.update');
     Route::delete('/account', [\App\Http\Controllers\Account\AccountController::class, 'destroy'])->name('account.destroy');

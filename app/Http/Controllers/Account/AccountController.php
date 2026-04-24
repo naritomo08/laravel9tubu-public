@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Models\Like;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +16,14 @@ class AccountController extends Controller
 {
     public function index()
     {
-        return view('account.index');
+        return view('account.index', [
+            'stats' => $this->buildStatsPayload(Auth::user()),
+        ]);
+    }
+
+    public function stats(Request $request): JsonResponse
+    {
+        return response()->json($this->buildStatsPayload($request->user()));
     }
 
     public function updateProfile(Request $request)
@@ -96,5 +105,20 @@ class AccountController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/tweet');
+    }
+
+    private function buildStatsPayload($user): array
+    {
+        $tweetCount = $user->tweets()->count();
+        $likeCount = Like::query()
+            ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
+            ->where('tweets.user_id', $user->id)
+            ->count();
+
+        return [
+            'label' => 'あなたの集計',
+            'tweet_count' => $tweetCount,
+            'like_count' => $likeCount,
+        ];
     }
 }
