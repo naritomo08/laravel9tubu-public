@@ -157,6 +157,17 @@ class AccountTest extends TestCase
             ->assertDontSee('アカウント削除');
     }
 
+    public function test_account_screen_displays_google_link_section()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/account')
+            ->assertOk()
+            ->assertSee('Google連携')
+            ->assertSee('Googleアカウントを連携する');
+    }
+
     public function test_account_screen_displays_own_stats()
     {
         $user = User::factory()->create();

@@ -182,6 +182,7 @@ tests/Unit/Services/TweetServiceTest.php
 tests/Feature/AccountTest.php
 tests/Feature/Admin/UserManagementTest.php
 tests/Feature/Auth/AuthenticationTest.php
+tests/Feature/Auth/GoogleAuthTest.php
 tests/Feature/Auth/EmailVerificationTest.php
 tests/Feature/Auth/PasswordConfirmationTest.php
 tests/Feature/Auth/PasswordResetTest.php
@@ -198,8 +199,9 @@ tests/Feature/Console/SendDailyTweetCountMailTest.php
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
 | `tests/Unit/Services/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者によるユーザーEmail更新、重複Emailのバリデーション、非管理者の操作拒否を検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者によるユーザーEmail更新、重複Emailのバリデーション、つぶやき・いいね集計表示、Google連携表示、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、誤パスワードでログイン失敗を検証。 |
+| `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
 | `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、署名付きURLでの認証成功/失敗を検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
@@ -218,6 +220,32 @@ tests/Browser/LoginTest.php
 | ファイル | テスト概要 |
 | --- | --- |
 | `tests/Browser/LoginTest.php` | ブラウザでログイン操作を行い、`/tweet` への遷移と表示文言を確認するE2Eテスト。 |
+
+## Google認証
+
+通常登録したユーザーは、ログイン後の `/account` から Google アカウントを連携できます。連携後はログイン画面の `Googleでログイン` から同じアカウントへ入れます。
+
+Google OAuth を使うには、Google Cloud Console で OAuth クライアントを作成し、以下を `backend/.env` に設定してください。
+
+```bash
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8080/auth/google/callback
+```
+
+Google 側の OAuth 設定にも、環境に対応した同じリダイレクト URI を登録します。
+
+```bash
+http://127.0.0.1:8080/auth/google/callback
+```
+
+本実装では、Google ログイン時に自動で新規登録や自動連携はしません。既存アカウントへ Google を紐付けたユーザーのみ、Google 認証でログインできます。
+
+以下のページを参考にgoogle認証情報を入手してください。
+
+```bash
+https://qiita.com/mnoguchi/items/7d7795444afb9d9dafa8
+```
 
 ## 管理者画面
 

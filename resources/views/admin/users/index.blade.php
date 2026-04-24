@@ -55,6 +55,7 @@
                         <th class="py-2 px-4 border-b dark:border-gray-700">メール</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">管理者</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">メール認証</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">Google連携</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">操作</th>
                     </tr>
                 </thead>
@@ -79,6 +80,11 @@
                             </td>
                             <td class="py-2 px-4 border-b text-center dark:border-gray-700">
                                 @if($user->email_verified_at)
+                                    <span class="text-green-600 font-bold">✔</span>
+                                @endif
+                            </td>
+                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
+                                @if($user->google_id)
                                     <span class="text-green-600 font-bold">✔</span>
                                 @endif
                             </td>

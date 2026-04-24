@@ -117,6 +117,37 @@ class UserManagementTest extends TestCase
             ]);
     }
 
+    public function test_admin_user_list_displays_google_auth_status()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        User::factory()->create([
+            'name' => 'Google連携ユーザー',
+            'google_id' => 'google-user-123',
+        ]);
+        User::factory()->create([
+            'name' => '通常ユーザー',
+            'google_id' => null,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('Google連携')
+            ->assertSee('Google連携ユーザー')
+            ->assertSee('通常ユーザー');
+
+        $html = $response->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/Google連携ユーザー<\/td>.*?<span class="text-green-600 font-bold">✔<\/span>/s',
+            $html
+        );
+        $this->assertMatchesRegularExpression(
+            '/通常ユーザー<\/td>.*?<td class="py-2 px-4 border-b text-center dark:border-gray-700">\s*<\/td>/s',
+            $html
+        );
+    }
+
     public function test_non_admin_can_not_fetch_stats_json()
     {
         $user = User::factory()->create();

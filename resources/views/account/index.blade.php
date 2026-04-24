@@ -69,6 +69,43 @@
         </div>
 
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="text-xl font-bold mb-4">Google連携</h3>
+
+            @if (Auth::user()->google_id)
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    Googleアカウント連携済みです。
+                    @if (Auth::user()->google_email)
+                        連携中: {{ Auth::user()->google_email }}
+                    @endif
+                </p>
+
+                <div class="flex justify-end mt-6">
+                    <form method="POST" action="{{ route('account.google.disconnect') }}">
+                        @csrf
+                        @method('DELETE')
+
+                        <x-button type="submit">
+                            連携を解除する
+                        </x-button>
+                    </form>
+                </div>
+            @else
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    通常ログイン済みの状態でGoogleアカウントを紐付けると、次回からGoogle認証でもログインできます。
+                </p>
+
+                <div class="flex justify-end mt-6">
+                    <a
+                        href="{{ route('account.google.connect') }}"
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                    >
+                        Googleアカウントを連携する
+                    </a>
+                </div>
+            @endif
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">パスワード変更</h3>
 
             <form method="POST" action="{{ route('account.password.update') }}">

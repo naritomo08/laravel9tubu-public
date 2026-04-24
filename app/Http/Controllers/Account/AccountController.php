@@ -79,6 +79,18 @@ class AccountController extends Controller
         return back()->with('feedback.success', 'パスワードを変更しました。');
     }
 
+    public function disconnectGoogle(Request $request)
+    {
+        $request->user()->forceFill([
+            'google_id' => null,
+            'google_email' => null,
+            'google_avatar' => null,
+            'google_connected_at' => null,
+        ])->save();
+
+        return back()->with('feedback.success', 'Googleアカウントの連携を解除しました。');
+    }
+
     public function destroy(Request $request)
     {
         $request->validate([
