@@ -109,10 +109,6 @@ http://127.0.0.1:8025
 docker-compose up -d
 ```
 
->この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
->`queue` コンテナが `php artisan queue:work` を常駐実行します。
->そのため、`Kernel.php` に登録したスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
-
 ## コンテナ停止する方法
 
 `docker-compose.yml`が存在するフォルダーで以下のコマンドを実行する。
@@ -304,9 +300,6 @@ vi backend/app/Console/Kernel.php
 
 ```
 
-上記定期動作をローカルで動くようにしたい場合、以下のコマンドをcronなどで
-毎分定期的に動かす必要がある。(テスト実施の場合、上記の設定を調整し任意に実行してもよい。)
-
-```bash
-docker-compose exec -T app php artisan schedule:run
-```
+>この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
+>`queue` コンテナが `php artisan queue:work` を常駐実行します。
+>そのため、`Kernel.php` に登録したスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
