@@ -15,6 +15,10 @@ trait CreatesApplication
     private const TEST_DB_DATABASE = 'laravel_test';
     private const TEST_DB_USERNAME = 'phper';
     private const TEST_DB_PASSWORD = 'secret';
+    private const TEST_CACHE_DRIVER = 'array';
+    private const TEST_MAIL_MAILER = 'array';
+    private const TEST_QUEUE_CONNECTION = 'sync';
+    private const TEST_SESSION_DRIVER = 'array';
 
     private function setTestEnvironmentVariable(string $key, string $value): void
     {
@@ -39,6 +43,10 @@ trait CreatesApplication
         $this->setTestEnvironmentVariable('DB_DATABASE', self::TEST_DB_DATABASE);
         $this->setTestEnvironmentVariable('DB_USERNAME', self::TEST_DB_USERNAME);
         $this->setTestEnvironmentVariable('DB_PASSWORD', self::TEST_DB_PASSWORD);
+        $this->setTestEnvironmentVariable('CACHE_DRIVER', self::TEST_CACHE_DRIVER);
+        $this->setTestEnvironmentVariable('MAIL_MAILER', self::TEST_MAIL_MAILER);
+        $this->setTestEnvironmentVariable('QUEUE_CONNECTION', self::TEST_QUEUE_CONNECTION);
+        $this->setTestEnvironmentVariable('SESSION_DRIVER', self::TEST_SESSION_DRIVER);
 
         if (file_exists(self::TEST_CONFIG_CACHE)) {
             unlink(self::TEST_CONFIG_CACHE);
@@ -48,6 +56,10 @@ trait CreatesApplication
 
         $app->make(Kernel::class)->bootstrap();
         $app['config']->set('app.key', self::TEST_APP_KEY);
+        $app['config']->set('cache.default', self::TEST_CACHE_DRIVER);
+        $app['config']->set('mail.default', self::TEST_MAIL_MAILER);
+        $app['config']->set('queue.default', self::TEST_QUEUE_CONNECTION);
+        $app['config']->set('session.driver', self::TEST_SESSION_DRIVER);
 
         return $app;
     }
