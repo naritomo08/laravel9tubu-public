@@ -95,19 +95,17 @@ class LoginTest extends DuskTestCase
         $appEnv = $this->getApplicationProcessEnvironment();
 
         Config::set("database.connections.{$connection}", [
-            'driver' => 'mysql',
+            'driver' => 'pgsql',
             'host' => env('DUSK_APP_DB_HOST', $appEnv['DB_HOST'] ?? env('DB_HOST', 'db')),
-            'port' => env('DUSK_APP_DB_PORT', '3306'),
+            'port' => env('DUSK_APP_DB_PORT', '5432'),
             'database' => env('DUSK_APP_DB_DATABASE', $appEnv['DB_DATABASE'] ?? env('DB_DATABASE', 'laravel_local')),
             'username' => env('DUSK_APP_DB_USERNAME', $appEnv['DB_USERNAME'] ?? env('DB_USERNAME', 'phper')),
             'password' => env('DUSK_APP_DB_PASSWORD', $appEnv['DB_PASSWORD'] ?? env('DB_PASSWORD', 'secret')),
-            'unix_socket' => '',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
         ]);
 
         return $connection;
@@ -118,19 +116,17 @@ class LoginTest extends DuskTestCase
         $connection = 'dusk_local_application';
 
         Config::set("database.connections.{$connection}", [
-            'driver' => 'mysql',
+            'driver' => 'pgsql',
             'host' => env('DUSK_LOCAL_DB_HOST', 'db'),
-            'port' => env('DUSK_LOCAL_DB_PORT', '3306'),
+            'port' => env('DUSK_LOCAL_DB_PORT', '5432'),
             'database' => env('DUSK_LOCAL_DB_DATABASE', 'laravel_local'),
             'username' => env('DUSK_LOCAL_DB_USERNAME', 'phper'),
             'password' => env('DUSK_LOCAL_DB_PASSWORD', 'secret'),
-            'unix_socket' => '',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
+            'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
         ]);
 
         return $connection;
