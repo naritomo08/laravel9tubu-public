@@ -46,6 +46,8 @@ const setupSessionTimeoutLogout = () => {
         }
 
         timeoutLogoutStarted = true;
+        const controller = new AbortController();
+        const abortTimer = window.setTimeout(() => controller.abort(), 5000);
 
         try {
             await fetch(logoutUrl, {
@@ -58,8 +60,10 @@ const setupSessionTimeoutLogout = () => {
                 },
                 body: new URLSearchParams({ _token: csrfToken }).toString(),
                 credentials: 'same-origin',
+                signal: controller.signal,
             });
         } finally {
+            window.clearTimeout(abortTimer);
             window.location.reload();
         }
     };
@@ -71,6 +75,9 @@ const setupSessionTimeoutLogout = () => {
     };
 
     window.setTimeout(logoutAndReload, Math.max(expiresAt - Date.now(), 0));
+    window.setInterval(checkTimeout, 30000);
+    window.addEventListener('focus', checkTimeout);
+    window.addEventListener('pageshow', checkTimeout);
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
             checkTimeout();
