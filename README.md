@@ -37,22 +37,6 @@ cd backend
 rm -rf .git
 ```
 
-最後の.git削除コマンドについて、
-別途devlopブランチに元のLaravel9から以下の
-対応をしたソースを置いています。
-
-* Laravel MIX化
-* breeze(認証機能)導入
-* TailwindCSS 導入
-
-これを元に新たに開発いただいても構いません。
-
-以下のコマンドを入力してから.gitを削除してください。
-
-```bash
-git checkout devlop
-```
-
 ### 環境構築用のシェルスクリプトを実行する
 
 ```bash
