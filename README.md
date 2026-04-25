@@ -40,6 +40,7 @@ rm -rf .git
 ### 環境構築用のシェルスクリプトを実行する
 
 ```bash
+cd ..
 chmod u+x build_env.sh && ./build_env.sh
 ```
 
@@ -76,6 +77,7 @@ http://127.0.0.1:8080/tweet
 http://127.0.0.1:8081
 
 * ログイン情報
+  - DB種別: PostgreSQL
   - サーバ: db
   - ユーザ名: phper
   - パスワード: secret
@@ -130,6 +132,26 @@ docker-compose exec db /bin/bash
 ```bash
 docker-compose build
 docker-compose up -d
+```
+
+### スケジュール実行の確認
+
+スケジュール実行プロセスの確認:
+
+```bash
+docker-compose logs -f scheduler
+```
+
+キューワーカーの確認:
+
+```bash
+docker-compose logs -f queue
+```
+
+手動で1回だけスケジューラ評価を走らせたい場合:
+
+```bash
+docker-compose exec app php artisan schedule:run
 ```
 
 ## LaravelTest
