@@ -132,6 +132,26 @@ docker-compose build
 docker-compose up -d
 ```
 
+### スケジュール実行の確認
+
+スケジュール実行プロセスの確認:
+
+```bash
+docker-compose logs -f scheduler
+```
+
+キューワーカーの確認:
+
+```bash
+docker-compose logs -f queue
+```
+
+手動で1回だけスケジューラ評価を走らせたい場合:
+
+```bash
+docker-compose exec app php artisan schedule:run
+```
+
 ## LaravelTest
 
 ```bash
