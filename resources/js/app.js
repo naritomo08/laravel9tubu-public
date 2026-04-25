@@ -6,6 +6,84 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
+const sessionExpiredStatuses = new Set([401, 419]);
+let sessionExpiredReloadStarted = false;
+
+const reloadWhenSessionExpired = (response) => {
+    if (!sessionExpiredStatuses.has(response.status)) {
+        return false;
+    }
+
+    if (!sessionExpiredReloadStarted) {
+        sessionExpiredReloadStarted = true;
+        window.location.reload();
+    }
+
+    return true;
+};
+
+const setupSessionTimeoutLogout = () => {
+    const sessionStarted = document.querySelector('meta[name="auth-session-started"]')?.content === 'true';
+
+    if (!sessionStarted) {
+        return;
+    }
+
+    const timeoutMinutes = Number(document.querySelector('meta[name="auth-session-timeout-minutes"]')?.content || 0);
+    const logoutUrl = document.querySelector('meta[name="auth-logout-url"]')?.content;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    if (!timeoutMinutes || !logoutUrl || !csrfToken) {
+        return;
+    }
+
+    const expiresAt = Date.now() + timeoutMinutes * 60 * 1000;
+    let timeoutLogoutStarted = false;
+
+    const logoutAndReload = async () => {
+        if (timeoutLogoutStarted) {
+            return;
+        }
+
+        timeoutLogoutStarted = true;
+
+        try {
+            await fetch(logoutUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new URLSearchParams({ _token: csrfToken }).toString(),
+                credentials: 'same-origin',
+            });
+        } finally {
+            window.location.reload();
+        }
+    };
+
+    const checkTimeout = () => {
+        if (Date.now() >= expiresAt) {
+            logoutAndReload();
+        }
+    };
+
+    window.setTimeout(logoutAndReload, Math.max(expiresAt - Date.now(), 0));
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            checkTimeout();
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupSessionTimeoutLogout);
+} else {
+    setupSessionTimeoutLogout();
+}
+
 const setupThemeToggle = () => {
     const getTheme = () => {
         try {
@@ -203,6 +281,10 @@ const setupTweetAutoRefresh = () => {
                 },
             });
 
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
             if (!response.ok) {
                 return;
             }
@@ -302,6 +384,10 @@ const setupEmailVerificationWatch = () => {
                 },
             });
 
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
             if (!response.ok) {
                 return;
             }
@@ -391,6 +477,10 @@ const setupLikeButtons = () => {
                 },
             });
 
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
             if (!response.ok) {
                 return;
             }
@@ -433,11 +523,17 @@ const setupLikeButtons = () => {
             const response = await fetch('/like', {
                 method: 'POST',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: JSON.stringify({ tweet_id: tweetId }),
             });
+
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
