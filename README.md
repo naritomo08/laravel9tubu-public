@@ -1,4 +1,4 @@
-# Laravel9tubu-public
+# Laravel9tubu-public(laravel13対応版)
 
 ## 立ち上げ概要
 
@@ -29,10 +29,10 @@ mac+DockerCompose+vscode+gitでの環境を構築してること。
 ### ベースリポジトリをクローンする
 
 ```bash
-git clone -b tubuyaki https://github.com/naritomo08/laravel_docker.git laraveldocker
+git clone -b laravel13 https://github.com/naritomo08/laravel_docker.git laraveldocker
 cd laraveldocker
 rm -rf .git
-git clone https://github.com/naritomo08/laravel9tubu-public.git backend
+git clone -b laravel13 https://github.com/naritomo08/laravel9tubu-public.git backend
 cd backend
 rm -rf .git
 ```
@@ -40,6 +40,7 @@ rm -rf .git
 ### 環境構築用のシェルスクリプトを実行する
 
 ```bash
+cd ..
 chmod u+x build_env.sh && ./build_env.sh
 ```
 

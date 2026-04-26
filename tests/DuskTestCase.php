@@ -45,11 +45,10 @@ abstract class DuskTestCase extends BaseTestCase
         );
         $capabilities->setCapability('pageLoadStrategy', 'eager');
 
-        // タイムアウトの設定を追加
         $capabilities->setCapability('timeouts', [
-            'implicit' => 30000, // 30秒
-            'pageLoad' => 60000, // 60秒
-            'script' => 30000, // 30秒
+            'implicit' => 0,
+            'pageLoad' => 30000,
+            'script' => 10000,
         ]);
 
         return RemoteWebDriver::create(
@@ -75,6 +74,16 @@ abstract class DuskTestCase extends BaseTestCase
      * which hides the original test failure we need to debug.
      */
     protected function captureFailuresFor($browsers)
+    {
+        return;
+    }
+
+    /**
+     * Disable Dusk's automatic console log collection.
+     *
+     * Remote Selenium can keep PHPUnit waiting while retrieving browser logs.
+     */
+    protected function storeConsoleLogsFor($browsers)
     {
         return;
     }

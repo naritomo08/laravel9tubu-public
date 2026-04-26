@@ -73,7 +73,7 @@ class LoginTest extends DuskTestCase
             }
 
             $users[] = User::on($connection)->create([
-                'name' => 'Dusk Login User',
+                'name' => 'Dusk Login User '.substr(md5($email), 0, 12),
                 'email' => $email,
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
