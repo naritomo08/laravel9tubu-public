@@ -23,9 +23,16 @@ const reloadWhenSessionExpired = (response) => {
 };
 
 const setupSessionTimeoutLogout = () => {
+    const sessionExpiresAtKey = 'tubuyaki.authSessionExpiresAt';
     const sessionStarted = document.querySelector('meta[name="auth-session-started"]')?.content === 'true';
 
     if (!sessionStarted) {
+        try {
+            sessionStorage.removeItem(sessionExpiresAtKey);
+        } catch (error) {
+            // Session storage may be unavailable in private browsing modes.
+        }
+
         return;
     }
 
@@ -37,7 +44,22 @@ const setupSessionTimeoutLogout = () => {
         return;
     }
 
-    const expiresAt = Date.now() + timeoutMinutes * 60 * 1000;
+    const timeoutMilliseconds = timeoutMinutes * 60 * 1000;
+    const fallbackExpiresAt = Date.now() + timeoutMilliseconds;
+    let expiresAt = fallbackExpiresAt;
+
+    try {
+        const storedExpiresAt = Number(sessionStorage.getItem(sessionExpiresAtKey) || 0);
+
+        if (storedExpiresAt > Date.now() && storedExpiresAt <= fallbackExpiresAt) {
+            expiresAt = storedExpiresAt;
+        } else {
+            sessionStorage.setItem(sessionExpiresAtKey, String(expiresAt));
+        }
+    } catch (error) {
+        // Keep the in-memory timeout if session storage is blocked.
+    }
+
     let timeoutLogoutStarted = false;
 
     const logoutAndReload = async () => {
@@ -46,6 +68,13 @@ const setupSessionTimeoutLogout = () => {
         }
 
         timeoutLogoutStarted = true;
+
+        try {
+            sessionStorage.removeItem(sessionExpiresAtKey);
+        } catch (error) {
+            // Session storage may be unavailable in private browsing modes.
+        }
+
         const controller = new AbortController();
         const abortTimer = window.setTimeout(() => controller.abort(), 5000);
 
