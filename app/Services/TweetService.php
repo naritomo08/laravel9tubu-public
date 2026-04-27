@@ -100,9 +100,9 @@ class TweetService
             $tweet->content = $content;
             $tweet->save();
             foreach ($images as $image) {
-                Storage::putFile('public/images', $image);
+                $path = Storage::disk('public')->putFile('images', $image);
                 $imageModel = new Image();
-                $imageModel->name = $image->hashName();
+                $imageModel->name = basename($path);
                 $imageModel->save();
                 $tweet->images()->attach($imageModel->id);
             }
@@ -113,9 +113,9 @@ class TweetService
         DB::transaction(function () use ($tweetId) {
             $tweet = Tweet::where('id', $tweetId)->firstOrFail();
             $tweet->images()->each(function ($image) use ($tweet){
-                $filePath = 'public/images/' . $image->name;
-                if(Storage::exists($filePath)){
-                    Storage::delete($filePath);
+                $filePath = 'images/' . $image->name;
+                if(Storage::disk('public')->exists($filePath)){
+                    Storage::disk('public')->delete($filePath);
                 }
                 $tweet->images()->detach($image->id);
                 $image->delete();

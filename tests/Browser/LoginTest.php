@@ -66,11 +66,19 @@ class LoginTest extends DuskTestCase
     private function createDuskUsers(string $primaryConnection, string $email, string $password): array
     {
         $users = [];
+        $createdTargets = [];
 
         foreach (array_unique([$primaryConnection, $this->configureLocalApplicationDatabaseConnection()]) as $connection) {
             if (!$this->hasUsersTable($connection)) {
                 continue;
             }
+
+            $target = $this->connectionTarget($connection);
+            if (isset($createdTargets[$target])) {
+                continue;
+            }
+
+            User::on($connection)->where('email', $email)->delete();
 
             $users[] = User::on($connection)->create([
                 'name' => 'Dusk Login User '.substr(md5($email), 0, 12),
@@ -80,6 +88,7 @@ class LoginTest extends DuskTestCase
                 'remember_token' => null,
                 'is_admin' => false,
             ]);
+            $createdTargets[$target] = true;
         }
 
         if (empty($users)) {
@@ -87,6 +96,19 @@ class LoginTest extends DuskTestCase
         }
 
         return $users;
+    }
+
+    private function connectionTarget(string $connection): string
+    {
+        $config = Config::get("database.connections.{$connection}");
+
+        return implode('|', [
+            $config['driver'] ?? '',
+            $config['host'] ?? '',
+            $config['port'] ?? '',
+            $config['database'] ?? '',
+            $config['username'] ?? '',
+        ]);
     }
 
     private function configureDuskApplicationDatabaseConnection(): string

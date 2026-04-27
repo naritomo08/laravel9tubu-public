@@ -50,9 +50,6 @@ chmod u+x build_env.sh && ./build_env.sh
 PHPコンテナログイン
 docker-compose exec app /bin/bash
 
-つぶやき機能投稿画像参照リンク作成
-php artisan storage:link
-
 Laracvelキャッシュクリア
 php artisan cache:clear
 php artisan config:clear

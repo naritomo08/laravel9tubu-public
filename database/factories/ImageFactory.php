@@ -19,8 +19,8 @@ class ImageFactory extends Factory
     public function definition()
     {
         // ディレクトリがなければ作成する
-        if (!Storage::exists('public/images')) {
-            Storage::makeDirectory('public/images');
+        if (!Storage::disk('public')->exists('images')) {
+            Storage::disk('public')->makeDirectory('images');
         }
 
         $filename = Str::uuid() . '.svg';
@@ -38,7 +38,7 @@ class ImageFactory extends Factory
 </svg>
 SVG;
 
-        Storage::put("public/images/{$filename}", $svg);
+        Storage::disk('public')->put("images/{$filename}", $svg);
 
         return [
             'name' => $filename,
