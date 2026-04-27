@@ -18,7 +18,8 @@ class TweetService
     public function getTweets(int $page = 1): LengthAwarePaginator
     {
         $tweets = Tweet::with(['user', 'images', 'likes'])
-            ->orderBy('updated_at', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC')
             ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
         $this->attachLikeAttributes($tweets->getCollection());
         
