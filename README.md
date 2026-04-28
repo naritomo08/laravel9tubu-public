@@ -152,36 +152,11 @@ docker-compose logs -f queue
 docker-compose exec app php artisan schedule:run
 ```
 
-## LaravelTest
-
-```bash
-PHPコンテナで動かす。
-docker-compose exec app /bin/bash
-php artisan optimize:clear
-
-ユニットテスト
-php artisan test
-
-ブラウザテスト
-php artisan dusk
-```
-
-> `php artisan test` はテスト用設定 `.env.testing` を使い、`db.test` 上の `laravel_test` データベースに接続します。
->テスト実行前に `php artisan optimize:clear` を実行し、通常アプリの設定キャッシュが残っていない状態で動かしてください。
-
-### テストコマンドごとの実行対象
-
-- `php artisan test`
-  - `tests/Unit`
-  - `tests/Feature`
-- `php artisan dusk`
-  - `tests/Browser`
-
 #### php artisan test で実行されるテスト
 
 ```bash
 tests/Unit/ExampleTest.php
-tests/Unit/Services/TweetTest.php
+tests/Unit/Models/TweetTest.php
 tests/Unit/Services/TweetServiceTest.php
 tests/Feature/AccountTest.php
 tests/Feature/Admin/UserManagementTest.php
@@ -194,6 +169,7 @@ tests/Feature/Auth/RegistrationTest.php
 tests/Feature/ExampleTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
+tests/Feature/Tweet/UpdateTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
 ```
 
@@ -201,7 +177,7 @@ tests/Feature/Console/SendDailyTweetCountMailTest.php
 | --- | --- |
 | `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
-| `tests/Unit/Services/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
+| `tests/Unit/Models/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
 | `tests/Feature/Admin/UserManagementTest.php` | 管理者によるユーザーEmail更新、重複Emailのバリデーション、つぶやき・いいね集計表示、Google連携表示、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、誤パスワードでログイン失敗を検証。 |
@@ -213,7 +189,8 @@ tests/Feature/Console/SendDailyTweetCountMailTest.php
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移することを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名更新時の差分HTML返却を検証。 |
-| `tests/Feature/Console/SendDailyTweetCountMailTest` | 日時送付メールの検証。 |
+| `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集後の並び順維持、画像の削除・追加、画像変更時の差分HTML返却を検証。 |
+| `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールの検証。 |
 
 #### php artisan dusk で実行されるテスト
 

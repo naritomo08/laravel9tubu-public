@@ -24,7 +24,7 @@ class IndexController extends Controller
             throw new AccessDeniedHttpException();
         }
 
-        $tweet = Tweet::where('id', $tweetId)->firstOrFail();
+        $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
         $returnPage = max(1, (int) $request->query('page', 1));
 
         return view('tweet.update')

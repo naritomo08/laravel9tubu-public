@@ -18,7 +18,8 @@ class TweetService
     public function getTweets(int $page = 1): LengthAwarePaginator
     {
         $tweets = Tweet::with(['user', 'images', 'likes'])
-            ->orderBy('updated_at', 'DESC')
+            ->orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC')
             ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
         $this->attachLikeAttributes($tweets->getCollection());
         
@@ -58,13 +59,7 @@ class TweetService
 
     private function getTweetVersion(Tweet $tweet): string
     {
-        $userUpdatedAt = $tweet->user?->updated_at;
-
-        if ($userUpdatedAt && $userUpdatedAt->gt($tweet->updated_at)) {
-            return $userUpdatedAt->toJSON();
-        }
-
-        return $tweet->updated_at->toJSON();
+        return $tweet->version;
     }
 
     private function attachLikeAttributes($tweets): void
@@ -108,6 +103,39 @@ class TweetService
             }
         });
     }
+
+    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = []): void
+    {
+        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds) {
+            $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
+
+            $tweet->images()
+                ->whereIn('images.id', $deleteImageIds)
+                ->get()
+                ->each(function (Image $image) use ($tweet) {
+                    $filePath = 'public/images/' . $image->name;
+
+                    if (Storage::exists($filePath)) {
+                        Storage::delete($filePath);
+                    }
+
+                    $tweet->images()->detach($image->id);
+                    $image->delete();
+                });
+
+            foreach ($images as $image) {
+                Storage::putFile('public/images', $image);
+                $imageModel = new Image();
+                $imageModel->name = $image->hashName();
+                $imageModel->save();
+                $tweet->images()->attach($imageModel->id);
+            }
+
+            $tweet->content = $content;
+            $tweet->save();
+        });
+    }
+
     public function deleteTweet(int $tweetId)
     {
         DB::transaction(function () use ($tweetId) {
