@@ -29,6 +29,26 @@ class Tweet extends Model
         return $this->likes()->count();
     }
 
+    public function version(): string
+    {
+        $userUpdatedAt = $this->user?->updated_at?->toJSON();
+        $imageVersions = $this->images
+            ->sortBy('id')
+            ->map(fn (Image $image) => [
+                'id' => $image->id,
+                'name' => $image->name,
+                'updated_at' => $image->updated_at?->toJSON(),
+            ])
+            ->values()
+            ->all();
+
+        return sha1(json_encode([
+            'tweet_updated_at' => $this->updated_at?->toJSON(),
+            'user_updated_at' => $userUpdatedAt,
+            'images' => $imageVersions,
+        ]));
+    }
+
     public function getFormattedContentAttribute(): HtmlString
     {
         $escapedContent = e((string) $this->content);

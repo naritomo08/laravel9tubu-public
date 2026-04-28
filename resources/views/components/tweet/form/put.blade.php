@@ -3,7 +3,7 @@
     'returnPage' => 1,
 ])
 <div class="p-4">
-    <form action="{{ route('tweet.update.put', ['tweetId' => $tweet->id]) }}" method="post">
+    <form action="{{ route('tweet.update.put', ['tweetId' => $tweet->id]) }}" method="post" enctype="multipart/form-data">
         @method('PUT')
         @csrf
         <input type="hidden" name="page" value="{{ $returnPage }}">
@@ -18,7 +18,42 @@
             140文字まで
         </p>
 
+        @php
+            $visibleImages = $tweet->images->filter->existsOnPublicDisk();
+        @endphp
+
+        @if($visibleImages->isNotEmpty())
+            <div class="mt-4">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">現在の画像</p>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    @foreach($visibleImages as $image)
+                        <label class="mt-2 block rounded-md border border-gray-200 p-2 dark:border-gray-700">
+                            <img src="{{ $image->publicUrl() }}" alt="{{ $image->name }}" class="h-24 w-full rounded object-cover">
+                            <span class="mt-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                                <input type="checkbox" name="delete_image_ids[]" value="{{ $image->id }}" class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                削除する
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        <div class="mt-4">
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">追加する画像</p>
+            <x-tweet.form.images></x-tweet.form.images>
+        </div>
+
         @error('tweet')
+        <x-alert.error>{{ $message }}</x-alert.error>
+        @enderror
+        @error('images')
+        <x-alert.error>{{ $message }}</x-alert.error>
+        @enderror
+        @error('images.*')
+        <x-alert.error>{{ $message }}</x-alert.error>
+        @enderror
+        @error('delete_image_ids')
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
 

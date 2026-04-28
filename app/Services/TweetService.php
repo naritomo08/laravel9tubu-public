@@ -59,13 +59,7 @@ class TweetService
 
     private function getTweetVersion(Tweet $tweet): string
     {
-        $userUpdatedAt = $tweet->user?->updated_at;
-
-        if ($userUpdatedAt && $userUpdatedAt->gt($tweet->updated_at)) {
-            return $userUpdatedAt->toJSON();
-        }
-
-        return $tweet->updated_at->toJSON();
+        return $tweet->version();
     }
 
     private function attachLikeAttributes($tweets): void
@@ -101,28 +95,58 @@ class TweetService
             $tweet->content = $content;
             $tweet->save();
             foreach ($images as $image) {
-                $path = Storage::disk('public')->putFile('images', $image);
-                $imageModel = new Image();
-                $imageModel->name = basename($path);
-                $imageModel->save();
-                $tweet->images()->attach($imageModel->id);
+                $this->attachImage($tweet, $image);
             }
         });
     }
+
+    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = []): void
+    {
+        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds) {
+            $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
+            $tweet->content = $content;
+            $tweet->save();
+
+            $tweet->images
+                ->whereIn('id', $deleteImageIds)
+                ->each(function ($image) use ($tweet) {
+                    $this->deleteImage($tweet, $image);
+                });
+
+            foreach ($images as $image) {
+                $this->attachImage($tweet, $image);
+            }
+        });
+    }
+
     public function deleteTweet(int $tweetId)
     {
         DB::transaction(function () use ($tweetId) {
             $tweet = Tweet::where('id', $tweetId)->firstOrFail();
             $tweet->images()->each(function ($image) use ($tweet){
-                $filePath = 'images/' . $image->name;
-                if(Storage::disk('public')->exists($filePath)){
-                    Storage::disk('public')->delete($filePath);
-                }
-                $tweet->images()->detach($image->id);
-                $image->delete();
+                $this->deleteImage($tweet, $image);
             });
     
             $tweet->delete();
         });
+    }
+
+    private function attachImage(Tweet $tweet, $image): void
+    {
+        $path = Storage::disk('public')->putFile('images', $image);
+        $imageModel = new Image();
+        $imageModel->name = basename($path);
+        $imageModel->save();
+        $tweet->images()->attach($imageModel->id);
+    }
+
+    private function deleteImage(Tweet $tweet, Image $image): void
+    {
+        $filePath = 'images/' . $image->name;
+        if (Storage::disk('public')->exists($filePath)) {
+            Storage::disk('public')->delete($filePath);
+        }
+        $tweet->images()->detach($image->id);
+        $image->delete();
     }
 }

@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Tweet;
 
+use App\Models\Image;
 use App\Models\Tweet;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class LatestTest extends TestCase
@@ -71,5 +73,42 @@ class LatestTest extends TestCase
         $this->assertStringContainsString('New Name', $updatedHtml);
         $this->assertStringContainsString('same tweet', $updatedHtml);
         $this->assertStringNotContainsString('Old Name', $updatedHtml);
+    }
+
+    public function test_latest_returns_updated_tweet_when_images_changed()
+    {
+        Storage::fake('public');
+
+        $oldTime = Carbon::now()->subMinutes(10);
+        $user = User::factory()->create([
+            'created_at' => $oldTime,
+            'updated_at' => $oldTime,
+        ]);
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'image changed tweet',
+            'created_at' => $oldTime,
+            'updated_at' => $oldTime,
+        ]);
+        $oldVersion = $tweet->load(['user', 'images'])->version();
+        $image = Image::factory()->create(['name' => 'changed.png']);
+
+        Storage::disk('public')->put('images/changed.png', 'image');
+        $tweet->images()->attach($image->id);
+
+        $response = $this->getJson('/tweet/latest?' . http_build_query([
+            'after_id' => $tweet->id,
+            'tweet_versions' => json_encode([
+                $tweet->id => $oldVersion,
+            ]),
+        ]));
+
+        $updatedHtml = implode('', $response->json('updated_html', []));
+
+        $response->assertOk()
+            ->assertJsonPath('latest_id', $tweet->id);
+
+        $this->assertStringContainsString('image changed tweet', $updatedHtml);
+        $this->assertStringContainsString('changed.png', $updatedHtml);
     }
 }
