@@ -243,7 +243,7 @@ const setupTweetAutoRefresh = () => {
     ].join('|');
 
     const getTweetSortValue = (item) => ({
-        updatedAt: Date.parse(item.dataset.tweetUpdatedAt || '') || 0,
+        createdAt: Date.parse(item.dataset.tweetCreatedAt || '') || 0,
         id: Number(item.dataset.tweetId || 0),
     });
 
@@ -251,8 +251,8 @@ const setupTweetAutoRefresh = () => {
         const tweet = getTweetSortValue(tweetItem);
         const current = getTweetSortValue(currentItem);
 
-        if (tweet.updatedAt !== current.updatedAt) {
-            return tweet.updatedAt > current.updatedAt;
+        if (tweet.createdAt !== current.createdAt) {
+            return tweet.createdAt > current.createdAt;
         }
 
         return tweet.id > current.id;
@@ -265,7 +265,7 @@ const setupTweetAutoRefresh = () => {
             existingItem.remove();
         }
 
-        const referenceItem = Array.from(items.querySelectorAll('li[data-tweet-id][data-tweet-updated-at]'))
+        const referenceItem = Array.from(items.querySelectorAll('li[data-tweet-id][data-tweet-created-at]'))
             .find((currentItem) => currentItem !== tweetItem && shouldInsertBefore(tweetItem, currentItem));
 
         items.insertBefore(tweetItem, referenceItem || null);

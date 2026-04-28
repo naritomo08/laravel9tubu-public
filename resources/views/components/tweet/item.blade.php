@@ -2,9 +2,7 @@
     'tweet',
     'currentPage' => null,
 ])
-@php($tweetVersion = $tweet->user?->updated_at?->gt($tweet->updated_at) ? $tweet->user->updated_at : $tweet->updated_at)
-
-<li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3 dark:border-gray-800" data-tweet-id="{{ $tweet->id }}" data-tweet-updated-at="{{ $tweet->updated_at->toJSON() }}" data-tweet-version="{{ $tweetVersion->toJSON() }}">
+<li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3 dark:border-gray-800" data-tweet-id="{{ $tweet->id }}" data-tweet-created-at="{{ $tweet->created_at->toJSON() }}" data-tweet-updated-at="{{ $tweet->updated_at->toJSON() }}" data-tweet-version="{{ $tweet->version }}">
     <div class="min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%;">
         <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs mb-2 dark:bg-gray-800 dark:text-gray-300">
             {{ $tweet->user->name }}

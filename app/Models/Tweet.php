@@ -29,6 +29,29 @@ class Tweet extends Model
         return $this->likes()->count();
     }
 
+    public function getVersionAttribute(): string
+    {
+        $this->loadMissing(['user', 'images']);
+
+        $latestUpdatedAt = $this->updated_at;
+        $userUpdatedAt = $this->user?->updated_at;
+
+        if ($userUpdatedAt && $userUpdatedAt->gt($latestUpdatedAt)) {
+            $latestUpdatedAt = $userUpdatedAt;
+        }
+
+        $imageSignature = $this->images
+            ->sortBy('id')
+            ->map(fn (Image $image) => implode(':', [
+                $image->id,
+                $image->name,
+                $image->updated_at?->toJSON(),
+            ]))
+            ->implode(',');
+
+        return $latestUpdatedAt->toJSON() . '|images:' . sha1($imageSignature);
+    }
+
     public function getFormattedContentAttribute(): HtmlString
     {
         $escapedContent = e((string) $this->content);
