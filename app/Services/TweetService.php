@@ -57,6 +57,37 @@ class TweetService
         return $tweets;
     }
 
+    public function searchTweets(string $query, bool $userSearch = false, int $page = 1): LengthAwarePaginator
+    {
+        $keyword = trim(preg_replace('/\s+/u', ' ', $query) ?? $query);
+
+        if ($keyword === '') {
+            $tweets = Tweet::whereRaw('0 = 1')
+                ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
+
+            $this->attachLikeAttributes($tweets->getCollection());
+
+            return $tweets;
+        }
+
+        $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->when(!$userSearch, function ($tweetQuery) use ($keyword) {
+                $tweetQuery->where('content', 'like', '%' . $keyword . '%');
+            })
+            ->when($userSearch, function ($tweetQuery) use ($keyword) {
+                $tweetQuery->whereHas('user', function ($userQuery) use ($keyword) {
+                    $userQuery->where('name', $keyword);
+                });
+            })
+            ->orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
+
+        $this->attachLikeAttributes($tweets->getCollection());
+
+        return $tweets;
+    }
+
     private function getTweetVersion(Tweet $tweet): string
     {
         return $tweet->version();

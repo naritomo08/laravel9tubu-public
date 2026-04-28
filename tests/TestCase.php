@@ -18,6 +18,7 @@ abstract class TestCase extends BaseTestCase
         Config::set('mail.default', 'array');
         Mail::fake();
 
+        $this->withoutVite();
         $this->withoutMiddleware(PreventRequestForgery::class);
     }
 }

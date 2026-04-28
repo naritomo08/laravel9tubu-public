@@ -4,8 +4,11 @@
             <x-theme-toggle />
         </div>
         @auth
-            <div class="flex justify-end items-center gap-3 px-4 pb-4">
+            <div class="flex flex-wrap justify-end items-center gap-3 px-4 pb-4">
                 @if(Auth::user()->hasVerifiedEmail())
+                    <x-element.button-a :href="route('tweet.search')">
+                        つぶやき検索
+                    </x-element.button-a>
                     <x-element.button-a :href="route('account.index')">
                         アカウント設定
                     </x-element.button-a>

@@ -222,6 +222,10 @@ const setupTweetAutoRefresh = () => {
     let latestTweetId = Number(list.dataset.latestTweetId || 0);
     let loading = false;
 
+    if (!latestUrl) {
+        return;
+    }
+
     const redirectToFirstPage = () => {
         const nextUrl = new URL(indexUrl, window.location.origin);
         nextUrl.searchParams.set('page', '1');
@@ -387,6 +391,160 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupTweetAutoRefresh);
 } else {
     setupTweetAutoRefresh();
+}
+
+const setupTweetSearch = () => {
+    const search = document.querySelector('[data-tweet-search]');
+
+    if (!search || search.dataset.initialized === 'true') {
+        return;
+    }
+
+    search.dataset.initialized = 'true';
+
+    const input = search.querySelector('[data-tweet-search-input]');
+    const userSearchInput = search.querySelector('[data-tweet-user-search-input]');
+    const results = document.querySelector('[data-tweet-search-results]');
+    const count = search.querySelector('[data-tweet-search-count]');
+    const loading = search.querySelector('[data-tweet-search-loading]');
+    const searchUrl = search.dataset.searchUrl;
+    let debounceTimer = null;
+    let controller = null;
+    let currentPage = Number(new URL(window.location.href).searchParams.get('page') || 1);
+
+    if (!input || !results || !searchUrl) {
+        return;
+    }
+
+    const updateBrowserUrl = (query, userSearch, page = 1) => {
+        const url = new URL(window.location.href);
+
+        if (query) {
+            url.searchParams.set('q', query);
+        } else {
+            url.searchParams.delete('q');
+        }
+
+        if (userSearch) {
+            url.searchParams.set('user_search', '1');
+        } else {
+            url.searchParams.delete('user_search');
+        }
+
+        if (page > 1) {
+            url.searchParams.set('page', String(page));
+        } else {
+            url.searchParams.delete('page');
+        }
+
+        window.history.replaceState({}, '', url.toString());
+    };
+
+    const searchTweets = async (page = 1, options = {}) => {
+        currentPage = page;
+
+        const query = input.value.trim();
+        const userSearch = userSearchInput?.checked === true;
+        updateBrowserUrl(query, userSearch, page);
+
+        if (controller) {
+            controller.abort();
+        }
+
+        controller = new AbortController();
+        if (!options.silent) {
+            loading?.classList.remove('hidden');
+        }
+
+        try {
+            const url = new URL(searchUrl, window.location.origin);
+            url.searchParams.set('q', query);
+            url.searchParams.set('user_search', userSearch ? '1' : '0');
+            url.searchParams.set('page', String(page));
+
+            const response = await fetch(url.toString(), {
+                headers: {
+                    Accept: 'application/json',
+                },
+                signal: controller.signal,
+            });
+
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            const nextPage = Number(data.current_page || page);
+
+            currentPage = nextPage;
+            updateBrowserUrl(query, userSearch, nextPage);
+            results.innerHTML = data.html || '';
+
+            if (count) {
+                count.textContent = `${data.count ?? 0}件`;
+            }
+
+            window.Alpine?.initTree(results);
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Error searching tweets:', error);
+            }
+        } finally {
+            if (!options.silent) {
+                loading?.classList.add('hidden');
+            }
+        }
+    };
+
+    input.addEventListener('input', () => {
+        window.clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(searchTweets, 300);
+    });
+
+    userSearchInput?.addEventListener('change', () => searchTweets());
+
+    results.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href]');
+
+        if (!link) {
+            return;
+        }
+
+        const pagination = link.closest(
+            '[data-tweet-search-pagination-top], [data-tweet-search-pagination-bottom]',
+        );
+
+        if (!pagination) {
+            return;
+        }
+
+        const url = new URL(link.href, window.location.origin);
+        const page = Number(url.searchParams.get('page') || 1);
+
+        if (!page) {
+            return;
+        }
+
+        event.preventDefault();
+        searchTweets(page);
+    });
+
+    window.setInterval(() => searchTweets(currentPage, { silent: true }), 5000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            searchTweets(currentPage, { silent: true });
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupTweetSearch);
+} else {
+    setupTweetSearch();
 }
 
 const setupEmailVerificationWatch = () => {

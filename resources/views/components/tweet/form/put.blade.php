@@ -1,12 +1,16 @@
 @props([
     'tweet',
     'returnPage' => 1,
+    'returnUrl' => null,
 ])
 <div class="p-4">
     <form action="{{ route('tweet.update.put', ['tweetId' => $tweet->id]) }}" method="post" enctype="multipart/form-data">
         @method('PUT')
         @csrf
         <input type="hidden" name="page" value="{{ $returnPage }}">
+        @if($returnUrl)
+            <input type="hidden" name="return_url" value="{{ $returnUrl }}">
+        @endif
         <div class="mt-1">
             <textarea
                 name="tweet"

@@ -1,6 +1,7 @@
 @props([
     'tweet',
     'currentPage' => null,
+    'returnUrl' => null,
 ])
 @php($tweetVersion = $tweet->version())
 
@@ -35,7 +36,7 @@
             </div>
         @endif
         <!-- 編集と削除 -->
-        <x-tweet.options :tweetId="$tweet->id" :userId="$tweet->user_id" :currentPage="$currentPage">
+        <x-tweet.options :tweetId="$tweet->id" :userId="$tweet->user_id" :currentPage="$currentPage" :returnUrl="$returnUrl">
         </x-tweet.options>
     </div>
 </li>

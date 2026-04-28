@@ -26,9 +26,33 @@ class IndexController extends Controller
 
         $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
         $returnPage = max(1, (int) $request->query('page', 1));
+        $returnUrl = $this->safeReturnUrl($request->query('return_url'));
 
         return view('tweet.update')
             ->with('tweet', $tweet)
-            ->with('returnPage', $returnPage);
+            ->with('returnPage', $returnPage)
+            ->with('returnUrl', $returnUrl);
+    }
+
+    private function safeReturnUrl(?string $returnUrl): ?string
+    {
+        if (!$returnUrl) {
+            return null;
+        }
+
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $returnHost = parse_url($returnUrl, PHP_URL_HOST);
+
+        if ($returnHost !== null && $returnHost !== $appHost) {
+            return null;
+        }
+
+        $path = parse_url($returnUrl, PHP_URL_PATH) ?: '';
+
+        if (!str_starts_with($path, '/tweet/search')) {
+            return null;
+        }
+
+        return $returnUrl;
     }
 }

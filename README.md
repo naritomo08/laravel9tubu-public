@@ -192,6 +192,7 @@ tests/Feature/Auth/RegistrationTest.php
 tests/Feature/ExampleTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
+tests/Feature/Tweet/SearchTest.php
 tests/Feature/Tweet/UpdateTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
 ```
@@ -210,9 +211,10 @@ tests/Feature/Console/SendDailyTweetCountMailTest.php
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
-| `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移することを検証。 |
+| `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
-| `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集時の画像追加・削除と、画像合計4枚までのバリデーションを検証。 |
+| `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索チェックボックス、`user:""` を通常キーワードとして扱うことを検証。 |
+| `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集時の画像追加・削除、画像合計4枚までのバリデーション、検索画面から編集した場合は検索条件を維持して戻り通知が出ることを検証。 |
 | `tests/Feature/Console/SendDailyTweetCountMailTest` | 日時送付メールの検証。 |
 
 #### php artisan dusk で実行されるテスト

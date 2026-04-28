@@ -21,9 +21,31 @@ class DeleteController extends Controller
         $tweetService->deleteTweet($tweetId);
         $lastPage = max(1, (int) ceil(Tweet::count() / TweetService::TWEETS_PER_PAGE));
         $returnPage = min(max(1, (int) $request->input('page', 1)), $lastPage);
+        $returnUrl = $this->safeReturnUrl($request->input('return_url'));
 
-        return redirect()
-            ->route('tweet.index', ['page' => $returnPage])
+        return redirect($returnUrl ?: route('tweet.index', ['page' => $returnPage]))
             ->with('feedback.success', "つぶやきを削除しました");
+    }
+
+    private function safeReturnUrl(?string $returnUrl): ?string
+    {
+        if (!$returnUrl) {
+            return null;
+        }
+
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $returnHost = parse_url($returnUrl, PHP_URL_HOST);
+
+        if ($returnHost !== null && $returnHost !== $appHost) {
+            return null;
+        }
+
+        $path = parse_url($returnUrl, PHP_URL_PATH) ?: '';
+
+        if (!str_starts_with($path, '/tweet/search')) {
+            return null;
+        }
+
+        return $returnUrl;
     }
 }

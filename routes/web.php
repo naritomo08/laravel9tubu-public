@@ -39,6 +39,8 @@ Route::get('/tweet', \App\Http\Controllers\Tweet\IndexController::class)->name('
 Route::get('/tweet/latest', \App\Http\Controllers\Tweet\LatestController::class)->name('tweet.latest');
 Route::get('/like/status', \App\Http\Controllers\Like\StatusController::class)->name('like.status');
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/tweet/search', [\App\Http\Controllers\Tweet\SearchController::class, 'index'])->name('tweet.search');
+    Route::get('/tweet/search/results', [\App\Http\Controllers\Tweet\SearchController::class, 'results'])->name('tweet.search.results');
     Route::post('/tweet/create', \App\Http\Controllers\Tweet\CreateController::class)
         ->name('tweet.create');
     Route::get('/tweet/update/{tweetId}', \App\Http\Controllers\Tweet\Update\IndexController::class)->name('tweet.update.index');

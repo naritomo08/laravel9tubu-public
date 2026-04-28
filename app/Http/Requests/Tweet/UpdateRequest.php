@@ -31,6 +31,7 @@ class UpdateRequest extends FormRequest
             'delete_image_ids' => 'array',
             'delete_image_ids.*' => 'integer',
             'page' => 'nullable|integer|min:1',
+            'return_url' => 'nullable|string|max:2000',
         ];
     }
 
@@ -77,5 +78,10 @@ class UpdateRequest extends FormRequest
     public function page(): int
     {
         return max(1, (int) $this->input('page', 1));
+    }
+
+    public function returnUrl(): ?string
+    {
+        return $this->input('return_url');
     }
 }

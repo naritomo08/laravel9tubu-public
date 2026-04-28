@@ -9,12 +9,14 @@ class Options extends Component
     private int $tweetId;
     private int $userId;
     private ?int $currentPage;
+    private ?string $returnUrl;
 
-    public function __construct(int $tweetId, int $userId, ?int $currentPage = null)
+    public function __construct(int $tweetId, int $userId, ?int $currentPage = null, ?string $returnUrl = null)
     {
         $this->tweetId = $tweetId;
         $this->userId = $userId;
         $this->currentPage = $currentPage;
+        $this->returnUrl = $returnUrl;
     }
 
     public function render()
@@ -27,6 +29,7 @@ class Options extends Component
         return view('components.tweet.options')
             ->with('tweetId', $this->tweetId)
             ->with('currentPage', $this->currentPage)
+            ->with('returnUrl', $this->returnUrl)
             ->with('isMyTweet', $isMyTweet)
             ->with('isAdminTweet', $isAdminTweet)
             ->with('isUserTweet', $isUserTweet)

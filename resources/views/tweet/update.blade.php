@@ -4,12 +4,13 @@
             編集 | つぶやきアプリ
         </h2>
         @php
+            $topUrl = $returnUrl ?? route('tweet.index', ['page' => $returnPage ?? 1]);
             $breadcrumbs = [
-                ['href' => route('tweet.index', ['page' => $returnPage ?? 1]), 'label' => 'TOP'],
+                ['href' => $topUrl, 'label' => '戻る'],
                 ['href' => '#', 'label' => '編集']
             ];
         @endphp
         <x-element.breadcrumbs :breadcrumbs="$breadcrumbs"></x-element.breadcrumbs>
-        <x-tweet.form.put :tweet="$tweet" :returnPage="$returnPage ?? 1"></x-tweet.form.put>
+        <x-tweet.form.put :tweet="$tweet" :returnPage="$returnPage ?? 1" :returnUrl="$returnUrl ?? null"></x-tweet.form.put>
     </x-layout.single>
 </x-layout>

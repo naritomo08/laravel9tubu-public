@@ -74,6 +74,29 @@ class UpdateTest extends TestCase
         $this->assertSame(4, $tweet->images()->count());
     }
 
+    public function test_update_redirects_back_to_search_page_with_feedback()
+    {
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'before',
+        ]);
+        $returnUrl = '/tweet/search?' . http_build_query([
+            'q' => 'before',
+            'user_search' => 0,
+            'page' => 2,
+        ]);
+
+        $response = $this->actingAs($user)->put('/tweet/update/' . $tweet->id, [
+            'tweet' => 'after',
+            'page' => 2,
+            'return_url' => $returnUrl,
+        ]);
+
+        $response->assertRedirect($returnUrl)
+            ->assertSessionHas('feedback.success', 'つぶやきを編集しました');
+    }
+
     private function fakePngUpload(string $name): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'tweet-image-');

@@ -26,9 +26,31 @@ class PutController extends Controller
             $request->images(),
             $request->deleteImageIds()
         );
+        $returnUrl = $this->safeReturnUrl($request->returnUrl());
 
-        return redirect()
-            ->route('tweet.index', ['page' => $request->page()])
+        return redirect($returnUrl ?: route('tweet.index', ['page' => $request->page()]))
             ->with('feedback.success', "つぶやきを編集しました");
+    }
+
+    private function safeReturnUrl(?string $returnUrl): ?string
+    {
+        if (!$returnUrl) {
+            return null;
+        }
+
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $returnHost = parse_url($returnUrl, PHP_URL_HOST);
+
+        if ($returnHost !== null && $returnHost !== $appHost) {
+            return null;
+        }
+
+        $path = parse_url($returnUrl, PHP_URL_PATH) ?: '';
+
+        if (!str_starts_with($path, '/tweet/search')) {
+            return null;
+        }
+
+        return $returnUrl;
     }
 }
