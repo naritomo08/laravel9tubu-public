@@ -157,20 +157,27 @@ docker-compose exec app php artisan schedule:run
 ## LaravelTest
 
 ```bash
-docker-compose logs -f scheduler
+PHPコンテナで動かす。
+docker-compose exec app /bin/bash
+php artisan optimize:clear
+
+ユニットテスト
+php artisan test
+
+ブラウザテスト
+php artisan dusk
 ```
 
-キューワーカーの確認:
+> `php artisan test` はテスト用設定 `.env.testing` を使い、`db.test` 上の `laravel_test` データベースに接続します。
+>テスト実行前に `php artisan optimize:clear` を実行し、通常アプリの設定キャッシュが残っていない状態で動かしてください。
 
-```bash
-docker-compose logs -f queue
-```
+### テストコマンドごとの実行対象
 
-手動で1回だけスケジューラ評価を走らせたい場合:
-
-```bash
-docker-compose exec app php artisan schedule:run
-```
+- `php artisan test`
+  - `tests/Unit`
+  - `tests/Feature`
+- `php artisan dusk`
+  - `tests/Browser`
 
 #### php artisan test で実行されるテスト
 
