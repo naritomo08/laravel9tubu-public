@@ -22,6 +22,7 @@
     @stack('css')
 </head>
 <body class="bg-gray-50 text-gray-900 transition-colors dark:bg-gray-950 dark:text-gray-100">
+    <x-legal-links />
     {{ $slot }}
 </body>
 </html>

@@ -75,6 +75,23 @@ php artisan db:seed --class=MarkSeededTweetsSeeder
 
 http://127.0.0.1:8080/tweet
 
+### 利用規約・プライバシーポリシー
+
+利用規約とプライバシーポリシーはMarkdownファイルで管理しています。
+
+| 表示ページ | Markdownファイル |
+| --- | --- |
+| `/terms` | `backend/resources/markdown/terms.md` |
+| `/privacy` | `backend/resources/markdown/privacy.md` |
+
+本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。画面表示時にMarkdownからHTMLへ変換されます。
+
+編集後に表示が更新されない場合は、PHPコンテナ内で以下を実行してビューキャッシュを削除してください。
+
+```bash
+php artisan view:clear
+```
+
 ### adminer(DB管理ツール)
 
 http://127.0.0.1:8081
@@ -197,6 +214,7 @@ tests/Feature/Auth/PasswordResetTest.php
 tests/Feature/Auth/RegistrationTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
 tests/Feature/ExampleTest.php
+tests/Feature/LegalDocumentTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
 tests/Feature/Tweet/ProtectionTest.php
@@ -220,6 +238,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
 | `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーへ送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
+| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクが表示されることを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |

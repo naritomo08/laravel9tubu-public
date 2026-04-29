@@ -29,6 +29,9 @@ Route::get('/', function () {
     return redirect('/tweet');
 });
 
+Route::get('/terms', [\App\Http\Controllers\LegalDocumentController::class, 'terms'])->name('legal.terms');
+Route::get('/privacy', [\App\Http\Controllers\LegalDocumentController::class, 'privacy'])->name('legal.privacy');
+
 require __DIR__.'/auth.php';
 
 //Route::get('/sample', [\App\Http\Controllers\Sample\IndexController::class, 'show']);

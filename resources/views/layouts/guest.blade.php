@@ -26,6 +26,7 @@
     </head>
     <body>
         <div class="font-sans text-gray-900 antialiased dark:text-gray-100">
+            <x-legal-links />
             @yield('content', $slot ?? '')
         </div>
     </body>
