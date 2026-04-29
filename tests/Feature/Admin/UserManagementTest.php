@@ -332,11 +332,15 @@ class UserManagementTest extends TestCase
         $this->assertTrue($seedAdmin->refresh()->is_admin);
     }
 
-    public function test_seed_admin_stays_identified_after_name_and_email_change()
+    public function test_seed_admin_is_overwritten_and_kept_to_one_user()
     {
         $seedAdmin = User::factory()->create([
             'name' => 'changed-admin',
             'email' => 'changed-admin@example.com',
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+        User::factory()->create([
             'is_admin' => true,
             'is_seed_admin' => true,
         ]);
@@ -345,10 +349,30 @@ class UserManagementTest extends TestCase
 
         $seedAdmin->refresh();
 
-        $this->assertSame('changed-admin', $seedAdmin->name);
-        $this->assertSame('changed-admin@example.com', $seedAdmin->email);
+        $this->assertSame('admin', $seedAdmin->name);
+        $this->assertSame('admin@tubuyaki.com', $seedAdmin->email);
         $this->assertTrue($seedAdmin->is_admin);
         $this->assertTrue($seedAdmin->is_seed_admin);
+        $this->assertSame(1, User::where('is_seed_admin', true)->count());
+    }
+
+    public function test_same_name_user_is_overwritten_by_users_seeder()
+    {
+        $sameNameUser = User::factory()->create([
+            'name' => 'admin',
+            'email' => 'same-name@example.com',
+            'is_admin' => false,
+            'is_seed_admin' => false,
+        ]);
+
+        $this->seed(UsersSeeder::class);
+
+        $sameNameUser->refresh();
+
+        $this->assertSame('admin', $sameNameUser->name);
+        $this->assertSame('admin@tubuyaki.com', $sameNameUser->email);
+        $this->assertTrue($sameNameUser->is_admin);
+        $this->assertTrue($sameNameUser->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());
     }
 

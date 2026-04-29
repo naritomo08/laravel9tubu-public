@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UsersSeeder extends Seeder
 {
@@ -15,19 +16,29 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        // Seederで作成した管理者は、名前やメールアドレスが変わっても固定管理者として扱う
-        $user = User::where('is_seed_admin', true)->first()
-            ?? User::where('email', 'admin@tubuyaki.com')->first()
-            ?? new User([
+        DB::transaction(function () {
+            $seedAdmin = [
                 'name' => 'admin',
-                'email' => 'admin@tubuyaki.com',
+                'email' => 'admin@ntubuyaki.com',
                 'password' => bcrypt('test'),
                 'email_verified_at' => now(),
-            ]);
+                'is_admin' => true,
+                'is_seed_admin' => true,
+            ];
 
-        $user->is_admin = true;
-        $user->is_seed_admin = true;
-        $user->save();
+            $seedAdminUser = User::where('is_seed_admin', true)->orderBy('id')->first();
+            $emailUser = User::where('email', $seedAdmin['email'])->first();
+            $nameUser = User::where('name', $seedAdmin['name'])->first();
 
+            // email/name はユニークなので、既存の同じ情報を持つユーザーを優先して上書きする
+            $user = $emailUser ?? $nameUser ?? $seedAdminUser ?? new User();
+
+            User::where('is_seed_admin', true)
+                ->when($user->exists, fn ($query) => $query->whereKeyNot($user->getKey()))
+                ->update(['is_seed_admin' => false]);
+
+            $user->forceFill($seedAdmin);
+            $user->save();
+        });
     }
 }

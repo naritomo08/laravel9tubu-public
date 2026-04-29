@@ -77,6 +77,54 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
     }
 
+    public function test_email_can_be_verified_while_another_user_is_authenticated()
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'email_verified_at' => now(),
+        ]);
+        $user = User::factory()->create([
+            'email' => 'changed@example.com',
+            'email_verified_at' => null,
+        ]);
+
+        Event::fake();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->actingAs($admin)->get($verificationUrl);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertTrue($admin->fresh()->is_admin);
+        $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+    }
+
+    public function test_email_can_be_verified_without_login()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        Event::fake();
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->get($verificationUrl);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+    }
+
     public function test_email_is_not_verified_with_invalid_hash()
     {
         $user = User::factory()->create([
