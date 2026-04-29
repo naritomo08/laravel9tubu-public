@@ -17,7 +17,7 @@ class Image extends Model
 
     public function publicUrl(): string
     {
-        return asset('storage/' . $this->path());
+        return url('storage/' . $this->path(), [], false);
     }
 
     private function path(): string
