@@ -14,6 +14,8 @@ class Tweet extends Model
 
     protected $casts = [
         'is_secret' => 'boolean',
+        'is_seeded' => 'boolean',
+        'is_protected' => 'boolean',
     ];
 
     public function user()
@@ -66,6 +68,7 @@ class Tweet extends Model
         return sha1(json_encode([
             'tweet_updated_at' => $this->updated_at?->toJSON(),
             'is_secret' => (bool) $this->is_secret,
+            'is_protected' => (bool) $this->is_protected,
             'user_updated_at' => $userUpdatedAt,
             'images' => $imageVersions,
         ]));

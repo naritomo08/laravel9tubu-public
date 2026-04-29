@@ -20,11 +20,17 @@ class IndexController extends Controller
     public function __invoke(Request $request, TweetService $tweetService)
     {
         $tweetId = (int) $request->route('tweetId');
-        if (!$tweetService->checkOwnTweet($request->user()->id, $tweetId)) {
+        $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
+        $user = $request->user();
+
+        if ($tweet->is_protected) {
             throw new AccessDeniedHttpException();
         }
 
-        $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
+        if (!$tweetService->checkOwnTweet($user->id, $tweetId)) {
+            throw new AccessDeniedHttpException();
+        }
+
         $returnPage = max(1, (int) $request->query('page', 1));
         $returnUrl = $this->safeReturnUrl($request->query('return_url'));
 

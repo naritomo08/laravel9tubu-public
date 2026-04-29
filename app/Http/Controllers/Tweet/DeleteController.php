@@ -14,11 +14,24 @@ class DeleteController extends Controller
     {
         $tweetId = (int) $request->route('tweetId');
         $user = $request->user();
+        $tweet = Tweet::where('id', $tweetId)->firstOrFail();
+        $canDeleteSeededTweet = $tweet->is_seeded
+            && $user->is_seed_admin
+            && $tweet->user_id === $user->id;
+
+        if ($tweet->is_protected && !$user->is_seed_admin) {
+            return back()->with('feedback.error', '保護されたつぶやきは削除できません');
+        }
+
+        if ($tweet->is_seeded && !$canDeleteSeededTweet) {
+            return back()->with('feedback.error', 'Seederで作成したつぶやきは削除できません');
+        }
+
         // 管理者は全ての投稿を削除可能
         if (!$user->is_admin && !$tweetService->checkOwnTweet($user->id, $tweetId)) {
             throw new AccessDeniedHttpException();
         }
-        $tweetService->deleteTweet($tweetId);
+        $tweetService->deleteTweet($tweetId, $canDeleteSeededTweet);
         $lastPage = max(1, (int) ceil(Tweet::count() / TweetService::TWEETS_PER_PAGE));
         $returnPage = min(max(1, (int) $request->input('page', 1)), $lastPage);
         $returnUrl = $this->safeReturnUrl($request->input('return_url'));

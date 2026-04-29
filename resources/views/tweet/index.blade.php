@@ -18,11 +18,19 @@
                 </form>
             </div>
         @endif
-        @if(Auth::check() && Auth::user()->is_admin)
-            <div class="mb-4 text-right">
-                <x-element.button-a :href="route('admin.users.index')">
-                    管理者画面
-                </x-element.button-a>
+        @if(Auth::check())
+            <div
+                class="mb-4 text-right"
+                data-admin-nav-watch
+                data-status-url="{{ route('account.admin.status', [], false) }}"
+                data-admin-url="{{ route('admin.users.index', [], false) }}"
+                data-is-admin="{{ Auth::user()->is_admin ? 'true' : 'false' }}"
+            >
+                @if(Auth::user()->is_admin)
+                    <x-element.button-a :href="route('admin.users.index')">
+                        管理者画面
+                    </x-element.button-a>
+                @endif
             </div>
         @endif
         @if (session('feedback.success'))

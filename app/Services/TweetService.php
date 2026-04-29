@@ -156,10 +156,14 @@ class TweetService
         });
     }
 
-    public function deleteTweet(int $tweetId)
+    public function deleteTweet(int $tweetId, bool $allowSeeded = false)
     {
-        DB::transaction(function () use ($tweetId) {
+        DB::transaction(function () use ($tweetId, $allowSeeded) {
             $tweet = Tweet::where('id', $tweetId)->firstOrFail();
+            if ($tweet->is_seeded && !$allowSeeded) {
+                return;
+            }
+
             $tweet->images()->each(function ($image) use ($tweet){
                 $this->deleteImage($tweet, $image);
             });

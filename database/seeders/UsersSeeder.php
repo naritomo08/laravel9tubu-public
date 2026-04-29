@@ -15,16 +15,19 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        // is_admin=true のユーザーをキーに上書き・新規作成
-        User::updateOrCreate(
-            ['is_admin' => true],
-            [
+        // Seederで作成した管理者は、名前やメールアドレスが変わっても固定管理者として扱う
+        $user = User::where('is_seed_admin', true)->first()
+            ?? User::where('email', 'admin@tubuyaki.com')->first()
+            ?? new User([
                 'name' => 'admin',
                 'email' => 'admin@tubuyaki.com',
                 'password' => bcrypt('test'),
                 'email_verified_at' => now(),
-            ]
-        );
+            ]);
+
+        $user->is_admin = true;
+        $user->is_seed_admin = true;
+        $user->save();
 
     }
 }

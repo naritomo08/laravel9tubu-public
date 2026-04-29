@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use Database\Seeders\UsersSeeder;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
@@ -66,6 +67,50 @@ class UserManagementTest extends TestCase
         $this->assertSame('old@example.com', $targetUser->refresh()->email);
     }
 
+    public function test_admin_can_not_update_seed_admin_email()
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $seedAdmin = User::factory()->create([
+            'email' => 'seed-admin@example.com',
+            'email_verified_at' => now(),
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.email.update', $seedAdmin), [
+                'email' => 'changed@example.com',
+            ])
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('error', 'Seederで作成した管理者のメールアドレスは変更できません');
+
+        $this->assertSame('seed-admin@example.com', $seedAdmin->refresh()->email);
+        Notification::assertNothingSent();
+    }
+
+    public function test_admin_user_list_does_not_show_seed_admin_email_update_form_to_other_admin()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $seedAdmin = User::factory()->create([
+            'email' => 'seed-admin@example.com',
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('seed-admin@example.com')
+            ->assertSee('固定');
+
+        $this->assertStringNotContainsString(
+            route('admin.users.email.update', $seedAdmin),
+            $response->getContent()
+        );
+    }
+
     public function test_admin_stats_are_displayed_on_user_management_screen()
     {
         $admin = User::factory()->create(['is_admin' => true, 'name' => '管理者']);
@@ -117,6 +162,35 @@ class UserManagementTest extends TestCase
             ]);
     }
 
+    public function test_admin_can_fetch_user_list_html_json()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        User::factory()->create(['name' => '動的更新ユーザー']);
+
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.users.list'))
+            ->assertOk()
+            ->assertJsonStructure(['html']);
+
+        $this->assertStringContainsString('動的更新ユーザー', $response->json('html'));
+    }
+
+    public function test_admin_user_list_is_ordered_by_user_id()
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'name' => 'Charlie Admin']);
+        $firstUser = User::factory()->create(['name' => 'Zulu User']);
+        $secondUser = User::factory()->create(['name' => 'Alpha User']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSeeInOrder([
+                $admin->name,
+                $firstUser->name,
+                $secondUser->name,
+            ]);
+    }
+
     public function test_admin_user_list_displays_google_auth_status()
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -148,12 +222,164 @@ class UserManagementTest extends TestCase
         );
     }
 
+    public function test_admin_can_promote_non_admin_user()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create(['is_admin' => false]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.admin.update', $user), [
+                'is_admin' => '1',
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertTrue($user->refresh()->is_admin);
+
+        $this->actingAs($user)
+            ->get(route('admin.users.index'))
+            ->assertOk();
+    }
+
+    public function test_admin_status_endpoint_reflects_promoted_user()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create(['is_admin' => false]);
+
+        $this->actingAs($user)
+            ->getJson(route('account.admin.status'))
+            ->assertOk()
+            ->assertJson(['is_admin' => false]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.admin.update', $user), [
+                'is_admin' => '1',
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->actingAs($user->refresh())
+            ->getJson(route('account.admin.status'))
+            ->assertOk()
+            ->assertJson(['is_admin' => true]);
+    }
+
+    public function test_tweet_index_renders_admin_nav_watch_for_non_admin_user()
+    {
+        $user = User::factory()->create(['is_admin' => false]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertSee('data-admin-nav-watch', false)
+            ->assertSee(route('account.admin.status', [], false), false)
+            ->assertDontSee('管理者画面');
+    }
+
+    public function test_admin_user_list_renders_admin_access_watch()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('data-admin-access-watch', false)
+            ->assertSee(route('account.admin.status', [], false), false)
+            ->assertSee(route('tweet.index', [], false), false);
+    }
+
+    public function test_admin_can_demote_other_non_seed_admin()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $targetAdmin = User::factory()->create(['is_admin' => true, 'is_seed_admin' => false]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.admin.update', $targetAdmin), [
+                'is_admin' => '0',
+            ])
+            ->assertRedirect(route('admin.users.index'));
+
+        $this->assertFalse($targetAdmin->refresh()->is_admin);
+    }
+
+    public function test_admin_can_not_change_own_admin_role()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.admin.update', $admin), [
+                'is_admin' => '0',
+            ])
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('error', '自分自身の管理者権限は変更できません');
+
+        $this->assertTrue($admin->refresh()->is_admin);
+    }
+
+    public function test_seed_admin_can_not_be_demoted()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $seedAdmin = User::factory()->create([
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.users.admin.update', $seedAdmin), [
+                'is_admin' => '0',
+            ])
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('error', 'Seederで作成した管理者は外せません');
+
+        $this->assertTrue($seedAdmin->refresh()->is_admin);
+    }
+
+    public function test_seed_admin_stays_identified_after_name_and_email_change()
+    {
+        $seedAdmin = User::factory()->create([
+            'name' => 'changed-admin',
+            'email' => 'changed-admin@example.com',
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+
+        $this->seed(UsersSeeder::class);
+
+        $seedAdmin->refresh();
+
+        $this->assertSame('changed-admin', $seedAdmin->name);
+        $this->assertSame('changed-admin@example.com', $seedAdmin->email);
+        $this->assertTrue($seedAdmin->is_admin);
+        $this->assertTrue($seedAdmin->is_seed_admin);
+        $this->assertSame(1, User::where('is_seed_admin', true)->count());
+    }
+
+    public function test_admin_user_can_not_be_deleted()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $targetAdmin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $targetAdmin))
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('error', '管理者は削除できません');
+
+        $this->assertDatabaseHas('users', ['id' => $targetAdmin->id]);
+    }
+
     public function test_non_admin_can_not_fetch_stats_json()
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->getJson(route('admin.users.stats'))
+            ->assertForbidden();
+    }
+
+    public function test_non_admin_can_not_fetch_user_list_html_json()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->getJson(route('admin.users.list'))
             ->assertForbidden();
     }
 }

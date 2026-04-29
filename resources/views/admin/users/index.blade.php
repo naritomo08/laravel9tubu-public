@@ -1,5 +1,10 @@
 <x-layout title="ユーザー管理 | 管理者画面">
     <x-layout.single>
+        <div
+            data-admin-access-watch
+            data-status-url="{{ route('account.admin.status', [], false) }}"
+            data-redirect-url="{{ route('tweet.index', [], false) }}"
+        ></div>
         <h2 class="text-center text-blue-700 text-3xl font-bold mt-8 mb-8">
             管理者画面
         </h2>
@@ -48,7 +53,7 @@
 
         <section>
             <h3 class="text-xl font-bold text-gray-800 mb-3">ユーザー一覧</h3>
-            <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+            <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-users-table data-users-url="{{ route('admin.users.list', [], false) }}">
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border-b dark:border-gray-700">名前</th>
@@ -59,48 +64,8 @@
                         <th class="py-2 px-4 border-b dark:border-gray-700">操作</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($users as $user)
-                        <tr>
-                            <td class="py-2 px-4 border-b dark:border-gray-700">{{ $user->name }}</td>
-                            <td class="py-2 px-4 border-b dark:border-gray-700">
-                                <form method="POST" action="{{ route('admin.users.email.update', $user->id) }}" class="flex items-center gap-2">
-                                    @csrf
-                                    @method('PUT')
-                                    <x-input class="block w-full" type="email" name="email" value="{{ $user->email }}" required />
-                                    <x-element.button>
-                                        変更
-                                    </x-element.button>
-                                </form>
-                            </td>
-                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-                                @if($user->is_admin)
-                                    <span class="text-green-600 font-bold">✔</span>
-                                @endif
-                            </td>
-                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-                                @if($user->email_verified_at)
-                                    <span class="text-green-600 font-bold">✔</span>
-                                @endif
-                            </td>
-                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-                                @if($user->google_id)
-                                    <span class="text-green-600 font-bold">✔</span>
-                                @endif
-                            </td>
-                            <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-                                @if(!$user->is_admin)
-                                    <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-element.button theme="secondary">
-                                            削除
-                                        </x-element.button>
-                                    </form>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+                <tbody data-admin-users-body>
+                    @include('admin.users._rows', ['users' => $users])
                 </tbody>
             </table>
         </section>
@@ -161,6 +126,85 @@
             };
 
             window.setInterval(refreshStats, 15000);
+        })();
+
+        (() => {
+            const table = document.querySelector('[data-admin-users-table]');
+            const body = document.querySelector('[data-admin-users-body]');
+
+            if (!table || !body) {
+                return;
+            }
+
+            const emailInputSelector = 'form input[name="email"]';
+
+            const rememberDirtyEmailInputs = () => {
+                const dirtyInputs = new Map();
+
+                body.querySelectorAll(emailInputSelector).forEach((input) => {
+                    const form = input.closest('form');
+                    const key = form?.getAttribute('action');
+                    const originalValue = input.dataset.originalValue ?? input.defaultValue;
+
+                    input.dataset.originalValue = originalValue;
+
+                    if (!key || input.value === originalValue) {
+                        return;
+                    }
+
+                    dirtyInputs.set(key, {
+                        value: input.value,
+                        focused: document.activeElement === input,
+                    });
+                });
+
+                return dirtyInputs;
+            };
+
+            const restoreDirtyEmailInputs = (dirtyInputs) => {
+                body.querySelectorAll(emailInputSelector).forEach((input) => {
+                    const form = input.closest('form');
+                    const key = form?.getAttribute('action');
+                    const dirtyInput = dirtyInputs.get(key);
+
+                    input.dataset.originalValue = input.defaultValue;
+
+                    if (!dirtyInput) {
+                        return;
+                    }
+
+                    input.value = dirtyInput.value;
+
+                    if (dirtyInput.focused) {
+                        input.focus();
+                    }
+                });
+            };
+
+            const refreshUsers = async () => {
+                const dirtyInputs = rememberDirtyEmailInputs();
+
+                try {
+                    const response = await fetch(table.dataset.usersUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    body.innerHTML = data.html ?? '';
+                    restoreDirtyEmailInputs(dirtyInputs);
+                } catch (error) {
+                    console.error('Error refreshing admin users:', error);
+                }
+            };
+
+            window.setInterval(refreshUsers, 15000);
         })();
     </script>
 </x-layout>

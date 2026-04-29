@@ -226,6 +226,8 @@ const setupTweetAutoRefresh = () => {
         return;
     }
 
+    const hasOpenTweetMenu = () => Boolean(document.querySelector('.tweet-option[open]'));
+
     const redirectToFirstPage = () => {
         const nextUrl = new URL(indexUrl, window.location.origin);
         nextUrl.searchParams.set('page', '1');
@@ -303,7 +305,7 @@ const setupTweetAutoRefresh = () => {
     };
 
     const refresh = async () => {
-        if (loading) {
+        if (loading || hasOpenTweetMenu()) {
             return;
         }
 
@@ -381,7 +383,7 @@ const setupTweetAutoRefresh = () => {
 
     window.setInterval(refresh, 5000);
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
+        if (!document.hidden && !hasOpenTweetMenu()) {
             refresh();
         }
     });
@@ -416,6 +418,8 @@ const setupTweetSearch = () => {
         return;
     }
 
+    const hasOpenTweetMenu = () => Boolean(results.querySelector('.tweet-option[open]'));
+
     const updateBrowserUrl = (query, userSearch, page = 1) => {
         const url = new URL(window.location.href);
 
@@ -441,6 +445,10 @@ const setupTweetSearch = () => {
     };
 
     const searchTweets = async (page = 1, options = {}) => {
+        if (options.silent && hasOpenTweetMenu()) {
+            return;
+        }
+
         currentPage = page;
 
         const query = input.value.trim();
@@ -535,7 +543,7 @@ const setupTweetSearch = () => {
 
     window.setInterval(() => searchTweets(currentPage, { silent: true }), 5000);
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
+        if (!document.hidden && !hasOpenTweetMenu()) {
             searchTweets(currentPage, { silent: true });
         }
     });
@@ -608,6 +616,154 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupEmailVerificationWatch);
 } else {
     setupEmailVerificationWatch();
+}
+
+const setupAdminNavWatch = () => {
+    if (window.__tubuyakiAdminNavWatchStarted) {
+        return;
+    }
+
+    const target = document.querySelector('[data-admin-nav-watch]');
+
+    if (!target) {
+        return;
+    }
+
+    const statusUrl = target.dataset.statusUrl;
+    const adminUrl = target.dataset.adminUrl;
+
+    if (!statusUrl || !adminUrl) {
+        return;
+    }
+
+    window.__tubuyakiAdminNavWatchStarted = true;
+
+    let checking = false;
+
+    const renderAdminButton = () => {
+        target.dataset.isAdmin = 'true';
+        target.innerHTML = `
+            <a href="${adminUrl}" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 text-white bg-blue-500 hover:bg-blue-600 focus:ring-blue-500">
+                管理者画面
+            </a>
+        `;
+    };
+
+    const checkAdminStatus = async () => {
+        if (checking) {
+            return;
+        }
+
+        checking = true;
+
+        try {
+            const response = await fetch(statusUrl, {
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.is_admin && target.dataset.isAdmin !== 'true') {
+                renderAdminButton();
+            } else if (!data.is_admin && target.dataset.isAdmin === 'true') {
+                target.dataset.isAdmin = 'false';
+                target.innerHTML = '';
+            }
+        } finally {
+            checking = false;
+        }
+    };
+
+    window.setInterval(checkAdminStatus, 5000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            checkAdminStatus();
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdminNavWatch);
+} else {
+    setupAdminNavWatch();
+}
+
+const setupAdminAccessWatch = () => {
+    if (window.__tubuyakiAdminAccessWatchStarted) {
+        return;
+    }
+
+    const target = document.querySelector('[data-admin-access-watch]');
+
+    if (!target) {
+        return;
+    }
+
+    const statusUrl = target.dataset.statusUrl;
+    const redirectUrl = target.dataset.redirectUrl || '/tweet';
+
+    if (!statusUrl) {
+        return;
+    }
+
+    window.__tubuyakiAdminAccessWatchStarted = true;
+
+    let checking = false;
+
+    const checkAdminAccess = async () => {
+        if (checking) {
+            return;
+        }
+
+        checking = true;
+
+        try {
+            const response = await fetch(statusUrl, {
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
+            if (reloadWhenSessionExpired(response)) {
+                return;
+            }
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!data.is_admin) {
+                window.location.assign(redirectUrl);
+            }
+        } finally {
+            checking = false;
+        }
+    };
+
+    window.setInterval(checkAdminAccess, 5000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            checkAdminAccess();
+        }
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdminAccessWatch);
+} else {
+    setupAdminAccessWatch();
 }
 
 // いいねボタンの処理

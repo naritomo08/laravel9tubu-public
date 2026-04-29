@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tweet;
 
+use Database\Seeders\MarkSeededTweetsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -46,5 +47,59 @@ class DeleteTest extends TestCase
 
         $response->assertRedirect($returnUrl)
             ->assertSessionHas('feedback.success', 'つぶやきを削除しました');
+    }
+
+    public function test_admin_can_not_delete_seeded_tweet()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $tweet = Tweet::factory()->create([
+            'user_id' => $admin->id,
+            'is_seeded' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->delete('/tweet/delete/' . $tweet->id);
+
+        $response->assertSessionHas('feedback.error', 'Seederで作成したつぶやきは削除できません');
+        $this->assertDatabaseHas('tweets', ['id' => $tweet->id]);
+    }
+
+    public function test_seed_admin_can_delete_own_seeded_tweet()
+    {
+        $seedAdmin = User::factory()->create([
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+        $tweet = Tweet::factory()->create([
+            'user_id' => $seedAdmin->id,
+            'is_seeded' => true,
+        ]);
+
+        $response = $this->actingAs($seedAdmin)->delete('/tweet/delete/' . $tweet->id);
+
+        $response->assertRedirect('/tweet?page=1')
+            ->assertSessionHas('feedback.success', 'つぶやきを削除しました');
+        $this->assertDatabaseMissing('tweets', ['id' => $tweet->id]);
+    }
+
+    public function test_mark_seeded_tweets_seeder_marks_seed_admin_tweets_without_ids()
+    {
+        $seedAdmin = User::factory()->create([
+            'is_admin' => true,
+            'is_seed_admin' => true,
+        ]);
+        $user = User::factory()->create();
+        $seedAdminTweet = Tweet::factory()->create([
+            'user_id' => $seedAdmin->id,
+            'is_seeded' => false,
+        ]);
+        $userTweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'is_seeded' => false,
+        ]);
+
+        $this->seed(MarkSeededTweetsSeeder::class);
+
+        $this->assertTrue($seedAdminTweet->refresh()->is_seeded);
+        $this->assertFalse($userTweet->refresh()->is_seeded);
     }
 }

@@ -19,6 +19,14 @@
                     シークレット
                 </span>
             @endif
+            @if($tweet->is_protected)
+                <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-800" title="保護">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 1.944a1 1 0 01.757.346 12.7 12.7 0 005.158 3.39 1 1 0 01.686.949c0 4.616-2.264 8.882-6.16 11.226a1 1 0 01-1.032 0C5.514 15.511 3.25 11.245 3.25 6.629a1 1 0 01.686-.949 12.7 12.7 0 005.158-3.39A1 1 0 0110 1.944z" clip-rule="evenodd" />
+                    </svg>
+                    保護
+                </span>
+            @endif
         </div>
         <p class="text-gray-600 break-all dark:text-gray-200" style="overflow-wrap: anywhere; word-break: break-word;">{!! $tweet->formatted_content !!}</p>
         <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $tweet->created_at }}</p>
@@ -46,7 +54,7 @@
             </div>
         @endif
         <!-- 編集と削除 -->
-        <x-tweet.options :tweetId="$tweet->id" :userId="$tweet->user_id" :currentPage="$currentPage" :returnUrl="$returnUrl">
+        <x-tweet.options :tweetId="$tweet->id" :userId="$tweet->user_id" :currentPage="$currentPage" :returnUrl="$returnUrl" :isSeeded="$tweet->is_seeded" :isProtected="$tweet->is_protected" :tweetUserIsSeedAdmin="$tweet->user->is_seed_admin">
         </x-tweet.options>
     </div>
 </li>

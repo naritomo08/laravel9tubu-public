@@ -30,8 +30,21 @@ class UserController extends Controller
         return response()->json($this->buildStatsPayload($users));
     }
 
+    public function listUsers(): JsonResponse
+    {
+        return response()->json([
+            'html' => view('admin.users._rows', [
+                'users' => $this->getUsersWithStats(),
+            ])->render(),
+        ]);
+    }
+
     public function updateEmail(Request $request, User $user)
     {
+        if ($user->is_seed_admin && auth()->id() !== $user->id) {
+            return redirect()->route('admin.users.index')->with('error', 'Seederで作成した管理者のメールアドレスは変更できません');
+        }
+
         $validated = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
         ], [
@@ -55,6 +68,34 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'メールアドレスを変更しました。新しいメールアドレスへ確認メールを送信しました。');
+    }
+
+    public function updateAdmin(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'is_admin' => ['required', 'boolean'],
+        ]);
+
+        $makeAdmin = (bool) $validated['is_admin'];
+
+        if (auth()->id() === $user->id) {
+            return redirect()->route('admin.users.index')->with('error', '自分自身の管理者権限は変更できません');
+        }
+
+        if (!$makeAdmin && $user->is_seed_admin) {
+            return redirect()->route('admin.users.index')->with('error', 'Seederで作成した管理者は外せません');
+        }
+
+        if ($user->is_admin === $makeAdmin) {
+            return redirect()->route('admin.users.index')->with('success', '管理者権限は変更されていません');
+        }
+
+        $user->is_admin = $makeAdmin;
+        $user->save();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', $makeAdmin ? '管理者にしました' : '管理者から外しました');
     }
 
     public function destroy(User $user)
@@ -85,8 +126,7 @@ class UserController extends Controller
                     ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
                     ->whereColumn('tweets.user_id', 'users.id'),
             ])
-            ->orderByDesc('is_admin')
-            ->orderBy('name')
+            ->orderBy('id')
             ->get();
     }
 
