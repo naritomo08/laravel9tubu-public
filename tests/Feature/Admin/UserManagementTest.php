@@ -266,7 +266,7 @@ class UserManagementTest extends TestCase
         $seedAdmin->refresh();
 
         $this->assertSame('admin', $seedAdmin->name);
-        $this->assertSame('webadmin@naritomo.cloud', $seedAdmin->email);
+        $this->assertSame('admin@tubuyaki.com', $seedAdmin->email);
         $this->assertTrue($seedAdmin->is_admin);
         $this->assertTrue($seedAdmin->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());
