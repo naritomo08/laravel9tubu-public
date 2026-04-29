@@ -17,7 +17,7 @@
         <div
             class="bg-white rounded-md shadow-lg p-4 dark:bg-gray-900 dark:shadow-gray-950/40"
             data-tweet-search
-            data-search-url="{{ route('tweet.search.results') }}"
+            data-search-url="{{ route('tweet.search.results', [], false) }}"
         >
             <label for="tweet-search-query" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 検索キーワード
@@ -54,7 +54,7 @@
         <div
             class="bg-white rounded-md shadow-lg mt-5 mb-5 dark:bg-gray-900 dark:shadow-gray-950/40"
             data-tweet-list
-            data-like-status-url="{{ route('like.status') }}"
+            data-like-status-url="{{ route('like.status', [], false) }}"
             data-tweet-search-results
         >
             <x-tweet.search-results :tweets="$tweets" :returnUrl="$returnUrl"></x-tweet.search-results>

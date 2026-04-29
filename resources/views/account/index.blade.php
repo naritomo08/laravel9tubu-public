@@ -19,7 +19,7 @@
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">あなたのつぶやき・いいね集計</h3>
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-account-stats-table data-stats-url="{{ route('account.stats') }}">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-account-stats-table data-stats-url="{{ route('account.stats', [], false) }}">
                     <thead>
                         <tr>
                             <th class="py-2 px-4 border-b text-left dark:border-gray-700">対象</th>

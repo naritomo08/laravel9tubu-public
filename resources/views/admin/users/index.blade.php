@@ -19,7 +19,7 @@
         <section class="mb-8">
             <h3 class="text-xl font-bold text-gray-800 mb-3">つぶやき・いいね集計</h3>
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-stats-table data-stats-url="{{ route('admin.users.stats') }}">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-stats-table data-stats-url="{{ route('admin.users.stats', [], false) }}">
                     <thead>
                         <tr>
                             <th class="py-2 px-4 border-b text-left dark:border-gray-700">対象</th>
