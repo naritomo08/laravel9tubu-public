@@ -53,7 +53,7 @@ class EmailVerificationTest extends TestCase
             ->get(route('tweet.index'))
             ->assertOk()
             ->assertSee('data-email-verification-watch', false)
-            ->assertSee(route('verification.status'), false);
+            ->assertSee(route('verification.status', [], false), false);
     }
 
     public function test_email_can_be_verified()
