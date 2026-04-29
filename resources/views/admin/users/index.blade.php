@@ -136,54 +136,7 @@
                 return;
             }
 
-            const emailInputSelector = 'form input[name="email"]';
-
-            const rememberDirtyEmailInputs = () => {
-                const dirtyInputs = new Map();
-
-                body.querySelectorAll(emailInputSelector).forEach((input) => {
-                    const form = input.closest('form');
-                    const key = form?.getAttribute('action');
-                    const originalValue = input.dataset.originalValue ?? input.defaultValue;
-
-                    input.dataset.originalValue = originalValue;
-
-                    if (!key || input.value === originalValue) {
-                        return;
-                    }
-
-                    dirtyInputs.set(key, {
-                        value: input.value,
-                        focused: document.activeElement === input,
-                    });
-                });
-
-                return dirtyInputs;
-            };
-
-            const restoreDirtyEmailInputs = (dirtyInputs) => {
-                body.querySelectorAll(emailInputSelector).forEach((input) => {
-                    const form = input.closest('form');
-                    const key = form?.getAttribute('action');
-                    const dirtyInput = dirtyInputs.get(key);
-
-                    input.dataset.originalValue = input.defaultValue;
-
-                    if (!dirtyInput) {
-                        return;
-                    }
-
-                    input.value = dirtyInput.value;
-
-                    if (dirtyInput.focused) {
-                        input.focus();
-                    }
-                });
-            };
-
             const refreshUsers = async () => {
-                const dirtyInputs = rememberDirtyEmailInputs();
-
                 try {
                     const response = await fetch(table.dataset.usersUrl, {
                         headers: {
@@ -198,7 +151,6 @@
 
                     const data = await response.json();
                     body.innerHTML = data.html ?? '';
-                    restoreDirtyEmailInputs(dirtyInputs);
                 } catch (error) {
                     console.error('Error refreshing admin users:', error);
                 }

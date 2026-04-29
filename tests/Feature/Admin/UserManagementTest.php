@@ -6,109 +6,25 @@ use Database\Seeders\UsersSeeder;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_update_user_email()
-    {
-        Notification::fake();
-
-        $admin = User::factory()->create(['is_admin' => true]);
-        $user = User::factory()->create([
-            'email' => 'old@example.com',
-            'email_verified_at' => now(),
-        ]);
-
-        $this->actingAs($admin)
-            ->put(route('admin.users.email.update', $user), [
-                'email' => 'new@example.com',
-            ])
-            ->assertRedirect(route('admin.users.index'));
-
-        $user->refresh();
-
-        $this->assertSame('new@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
-        Notification::assertSentTo($user, VerifyEmail::class);
-    }
-
-    public function test_admin_can_not_update_user_email_to_existing_email()
+    public function test_admin_user_list_displays_emails_without_update_form()
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $user = User::factory()->create(['email' => 'old@example.com']);
-        $otherUser = User::factory()->create(['email' => 'existing@example.com']);
-
-        $this->actingAs($admin)
-            ->put(route('admin.users.email.update', $user), [
-                'email' => $otherUser->email,
-            ])
-            ->assertSessionHasErrors('email');
-
-        $this->assertSame('old@example.com', $user->refresh()->email);
-    }
-
-    public function test_non_admin_can_not_update_user_email()
-    {
-        $user = User::factory()->create();
-        $targetUser = User::factory()->create(['email' => 'old@example.com']);
-
-        $this->actingAs($user)
-            ->put(route('admin.users.email.update', $targetUser), [
-                'email' => 'new@example.com',
-            ])
-            ->assertForbidden();
-
-        $this->assertSame('old@example.com', $targetUser->refresh()->email);
-    }
-
-    public function test_admin_can_not_update_seed_admin_email()
-    {
-        Notification::fake();
-
-        $admin = User::factory()->create(['is_admin' => true]);
-        $seedAdmin = User::factory()->create([
-            'email' => 'seed-admin@example.com',
-            'email_verified_at' => now(),
-            'is_admin' => true,
-            'is_seed_admin' => true,
-        ]);
-
-        $this->actingAs($admin)
-            ->put(route('admin.users.email.update', $seedAdmin), [
-                'email' => 'changed@example.com',
-            ])
-            ->assertRedirect(route('admin.users.index'))
-            ->assertSessionHas('error', 'Seederで作成した管理者のメールアドレスは変更できません');
-
-        $this->assertSame('seed-admin@example.com', $seedAdmin->refresh()->email);
-        Notification::assertNothingSent();
-    }
-
-    public function test_admin_user_list_does_not_show_seed_admin_email_update_form_to_other_admin()
-    {
-        $admin = User::factory()->create(['is_admin' => true]);
-        $seedAdmin = User::factory()->create([
-            'email' => 'seed-admin@example.com',
-            'is_admin' => true,
-            'is_seed_admin' => true,
-        ]);
 
         $response = $this->actingAs($admin)
             ->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('seed-admin@example.com')
-            ->assertSee('固定');
+            ->assertSee('old@example.com');
 
-        $this->assertStringNotContainsString(
-            route('admin.users.email.update', $seedAdmin),
-            $response->getContent()
-        );
+        $this->assertStringNotContainsString('name="email"', $response->getContent());
+        $this->assertStringNotContainsString('/admin/users/'.$user->id.'/email', $response->getContent());
     }
 
     public function test_admin_stats_are_displayed_on_user_management_screen()
@@ -350,7 +266,7 @@ class UserManagementTest extends TestCase
         $seedAdmin->refresh();
 
         $this->assertSame('admin', $seedAdmin->name);
-        $this->assertSame('admin@tubuyaki.com', $seedAdmin->email);
+        $this->assertSame('webadmin@naritomo.cloud', $seedAdmin->email);
         $this->assertTrue($seedAdmin->is_admin);
         $this->assertTrue($seedAdmin->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());
@@ -370,7 +286,7 @@ class UserManagementTest extends TestCase
         $sameNameUser->refresh();
 
         $this->assertSame('admin', $sameNameUser->name);
-        $this->assertSame('admin@tubuyaki.com', $sameNameUser->email);
+        $this->assertSame('webadmin@naritomo.cloud', $sameNameUser->email);
         $this->assertTrue($sameNameUser->is_admin);
         $this->assertTrue($sameNameUser->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());

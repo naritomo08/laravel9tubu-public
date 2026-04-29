@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -37,37 +36,6 @@ class UserController extends Controller
                 'users' => $this->getUsersWithStats(),
             ])->render(),
         ]);
-    }
-
-    public function updateEmail(Request $request, User $user)
-    {
-        if ($user->is_seed_admin && auth()->id() !== $user->id) {
-            return redirect()->route('admin.users.index')->with('error', 'Seederで作成した管理者のメールアドレスは変更できません');
-        }
-
-        $validated = $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-        ], [
-            'email.required' => 'メールアドレスを入力してください。',
-            'email.email' => 'メールアドレスの形式で入力してください。',
-            'email.max' => 'メールアドレスは255文字以内で入力してください。',
-            'email.unique' => 'このメールアドレスは既に使われています。',
-        ]);
-
-        if ($validated['email'] === $user->email) {
-            return redirect()
-                ->route('admin.users.index')
-                ->with('success', 'メールアドレスは変更されていません。');
-        }
-
-        $user->email = $validated['email'];
-        $user->email_verified_at = null;
-        $user->save();
-        $user->sendEmailVerificationNotification();
-
-        return redirect()
-            ->route('admin.users.index')
-            ->with('success', 'メールアドレスを変更しました。新しいメールアドレスへ確認メールを送信しました。');
     }
 
     public function updateAdmin(Request $request, User $user)

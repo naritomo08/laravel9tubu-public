@@ -2,19 +2,7 @@
     <tr>
         <td class="py-2 px-4 border-b dark:border-gray-700">{{ $user->name }}</td>
         <td class="py-2 px-4 border-b dark:border-gray-700">
-            @if($user->is_seed_admin && Auth::id() !== $user->id)
-                <span>{{ $user->email }}</span>
-                <span class="ml-1 text-xs text-gray-500">固定</span>
-            @else
-                <form method="POST" action="{{ route('admin.users.email.update', $user->id) }}" class="flex items-center gap-2">
-                    @csrf
-                    @method('PUT')
-                    <x-input class="block w-full" type="email" name="email" value="{{ $user->email }}" required />
-                    <x-element.button>
-                        変更
-                    </x-element.button>
-                </form>
-            @endif
+            {{ $user->email }}
         </td>
         <td class="py-2 px-4 border-b text-center dark:border-gray-700">
             @if($user->is_admin)

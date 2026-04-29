@@ -76,7 +76,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/users/stats', [\App\Http\Controllers\Admin\UserController::class, 'stats'])->name('admin.users.stats');
     Route::get('/admin/users/list', [\App\Http\Controllers\Admin\UserController::class, 'listUsers'])->name('admin.users.list');
-    Route::put('/admin/users/{user}/email', [\App\Http\Controllers\Admin\UserController::class, 'updateEmail'])->name('admin.users.email.update');
     Route::put('/admin/users/{user}/admin', [\App\Http\Controllers\Admin\UserController::class, 'updateAdmin'])->name('admin.users.admin.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 });

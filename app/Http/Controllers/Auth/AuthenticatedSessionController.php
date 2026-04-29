@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -31,6 +32,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $intendedPath = ltrim(parse_url((string) $request->session()->get('url.intended'), PHP_URL_PATH) ?: '', '/');
+        if (! $request->user()->is_admin && ($intendedPath === 'admin' || Str::startsWith($intendedPath, 'admin/'))) {
+            $request->session()->forget('url.intended');
+
+            return redirect(RouteServiceProvider::HOME);
+        }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

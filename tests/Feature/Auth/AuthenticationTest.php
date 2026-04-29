@@ -31,6 +31,21 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(RouteServiceProvider::HOME);
     }
 
+    public function test_non_admin_users_are_not_redirected_to_stale_admin_intended_url_after_login()
+    {
+        $user = User::factory()->create(['is_admin' => false]);
+
+        $response = $this
+            ->withSession(['url.intended' => route('admin.users.index')])
+            ->post('/login', [
+                'email' => $user->email,
+                'password' => 'password',
+            ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password()
     {
         $user = User::factory()->create();

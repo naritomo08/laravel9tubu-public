@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 
 class DeleteUnverifiedUsers extends Command
 {
@@ -15,6 +14,7 @@ class DeleteUnverifiedUsers extends Command
     {
         $count = User::whereNull('email_verified_at')
             ->where('created_at', '<', now()->subHour())
+            ->whereColumn('created_at', 'updated_at')
             ->delete();
         $this->info("Deleted {$count} unverified users.");
     }
