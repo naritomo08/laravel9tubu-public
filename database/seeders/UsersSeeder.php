@@ -19,7 +19,7 @@ class UsersSeeder extends Seeder
         DB::transaction(function () {
             $seedAdmin = [
                 'name' => 'admin',
-                'email' => 'admin@ntubuyaki.com',
+                'email' => 'admin@tubuyaki.com',
                 'password' => bcrypt('test'),
                 'email_verified_at' => now(),
                 'is_admin' => true,
