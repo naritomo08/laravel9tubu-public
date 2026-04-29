@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="auth-session-started" content="{{ Auth::check() ? 'true' : 'false' }}">
     <meta name="auth-session-timeout-minutes" content="{{ config('session.lifetime') }}">
-    <meta name="auth-logout-url" content="{{ route('logout') }}">
+    <meta name="auth-logout-url" content="{{ route('logout', [], false) }}">
     <script>
         (() => {
             try {
