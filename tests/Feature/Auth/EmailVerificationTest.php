@@ -125,6 +125,30 @@ class EmailVerificationTest extends TestCase
         $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
     }
 
+    public function test_email_can_be_verified_when_request_host_differs_from_generated_link()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        Event::fake();
+
+        $verificationPath = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)],
+            false
+        );
+
+        $response = $this
+            ->withServerVariables(['HTTP_HOST' => 'example.test'])
+            ->get($verificationPath);
+
+        Event::assertDispatched(Verified::class);
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+    }
+
     public function test_email_is_not_verified_with_invalid_hash()
     {
         $user = User::factory()->create([
