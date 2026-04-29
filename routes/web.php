@@ -31,6 +31,10 @@ Route::get('/', function () {
 
 Route::get('/terms', [\App\Http\Controllers\LegalDocumentController::class, 'terms'])->name('legal.terms');
 Route::get('/privacy', [\App\Http\Controllers\LegalDocumentController::class, 'privacy'])->name('legal.privacy');
+Route::middleware('auth')->group(function () {
+    Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'create'])->name('contact.create');
+    Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
+});
 
 require __DIR__.'/auth.php';
 

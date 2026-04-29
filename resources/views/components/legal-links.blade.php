@@ -13,6 +13,14 @@
             >
                 プライバシーポリシー
             </a>
+            @auth
+                <a
+                    href="{{ route('contact.create') }}"
+                    class="text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-blue-300"
+                >
+                    お問い合わせ
+                </a>
+            @endauth
         </div>
     </div>
 </div>

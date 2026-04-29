@@ -75,16 +75,20 @@ php artisan db:seed --class=MarkSeededTweetsSeeder
 
 http://127.0.0.1:8080/tweet
 
-### 利用規約・プライバシーポリシー
+### 利用規約・プライバシーポリシー・お問い合わせ
 
-利用規約とプライバシーポリシーはMarkdownファイルで管理しています。
+利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換されます。
 
 | 表示ページ | Markdownファイル |
 | --- | --- |
 | `/terms` | `backend/resources/markdown/terms.md` |
 | `/privacy` | `backend/resources/markdown/privacy.md` |
 
-本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。画面表示時にMarkdownからHTMLへ変換されます。
+お問い合わせはログイン後に表示される `/contact` から送信できます。ログイン中ユーザーのユーザー名とメールアドレスを固定表示し、問い合わせ内容を入力すると、管理者宛にメールがキューで送信されます。
+
+管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `webadmin@naritomo.org` 宛に送信されます。
+
+本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。
 
 編集後に表示が更新されない場合は、PHPコンテナ内で以下を実行してビューキャッシュを削除してください。
 
@@ -198,7 +202,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト
+#### php artisan test で実行されるテスト(100テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -213,6 +217,7 @@ tests/Feature/Auth/PasswordConfirmationTest.php
 tests/Feature/Auth/PasswordResetTest.php
 tests/Feature/Auth/RegistrationTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
+tests/Feature/ContactTest.php
 tests/Feature/ExampleTest.php
 tests/Feature/LegalDocumentTest.php
 tests/Feature/Tweet/DeleteTest.php
@@ -237,8 +242,9 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
 | `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーへ送信されないことを検証。 |
+| `tests/Feature/ContactTest.php` | 問い合わせ画面表示、ログイン済みユーザー情報の初期表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
-| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクが表示されることを検証。 |
+| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
@@ -246,7 +252,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Tweet/SecretModeTest.php` | シークレットモードのつぶやきが投稿者本人と管理者だけに表示されること、作成・編集時に設定が保存されること、検索・新着取得・いいね状態取得・いいね操作で第三者に参照されないことを検証。 |
 | `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集時の画像追加・削除、画像合計4枚までのバリデーション、検索画面から編集した場合は検索条件を維持して戻り通知が出ることを検証。 |
 
-#### php artisan dusk で実行されるテスト
+#### php artisan dusk で実行されるテスト(1テスト)
 
 ```bash
 tests/Browser/LoginTest.php

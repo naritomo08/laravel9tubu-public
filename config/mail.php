@@ -96,6 +96,8 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'admin_address' => env('ADMIN_EMAIL', 'webadmin@naritomo.org'),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings
