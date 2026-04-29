@@ -28,6 +28,7 @@ class CreateRequest extends FormRequest
             'images' => 'array|max:4',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'page' => 'nullable|integer|min:1',
+            'is_secret' => 'nullable|boolean',
         ];
     }
     // Requestクラスのuser関数で今自分がログインしているユーザーが取得できる
@@ -43,6 +44,11 @@ class CreateRequest extends FormRequest
     public function images(): array
     {
         return $this->file('images', []);
+    }
+
+    public function isSecret(): bool
+    {
+        return $this->boolean('is_secret');
     }
 
     public function page(): int

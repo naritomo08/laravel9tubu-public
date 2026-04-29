@@ -59,6 +59,9 @@ php artisan view:clear
 DB初期化
 php artisan migrate:fresh
 
+DB初期化せずマイグレートのみする場合
+php artisan migrate
+
 管理者アカウント設定
 php artisan db:seed --class=UsersSeeder
 ```
@@ -193,6 +196,7 @@ tests/Feature/ExampleTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
 tests/Feature/Tweet/SearchTest.php
+tests/Feature/Tweet/SecretModeTest.php
 tests/Feature/Tweet/UpdateTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
 ```
@@ -214,6 +218,7 @@ tests/Feature/Console/SendDailyTweetCountMailTest.php
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索チェックボックス、`user:""` を通常キーワードとして扱うことを検証。 |
+| `tests/Feature/Tweet/SecretModeTest.php` | シークレットモードのつぶやきが投稿者本人と管理者だけに表示されること、作成・編集時に設定が保存されること、検索・新着取得・いいね状態取得・いいね操作で第三者に参照されないことを検証。 |
 | `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集時の画像追加・削除、画像合計4枚までのバリデーション、検索画面から編集した場合は検索条件を維持して戻り通知が出ることを検証。 |
 | `tests/Feature/Console/SendDailyTweetCountMailTest` | 日時送付メールの検証。 |
 

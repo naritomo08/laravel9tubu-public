@@ -18,6 +18,7 @@ class TweetService
     public function getTweets(int $page = 1): LengthAwarePaginator
     {
         $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->visibleTo(Auth::user())
             ->orderBy('created_at', 'DESC')
             ->orderBy('id', 'DESC')
             ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
@@ -29,6 +30,7 @@ class TweetService
     public function getTweetsNewerThan(int $tweetId)
     {
         $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->visibleTo(Auth::user())
             ->where('id', '>', $tweetId)
             ->orderBy('id', 'DESC')
             ->get();
@@ -45,6 +47,7 @@ class TweetService
         }
 
         $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->visibleTo(Auth::user())
             ->whereIn('id', array_keys($tweetVersions))
             ->get()
             ->filter(function ($tweet) use ($tweetVersions) {
@@ -71,6 +74,7 @@ class TweetService
         }
 
         $tweets = Tweet::with(['user', 'images', 'likes'])
+            ->visibleTo(Auth::user())
             ->when(!$userSearch, function ($tweetQuery) use ($keyword) {
                 $tweetQuery->where('content', 'like', '%' . $keyword . '%');
             })
@@ -118,12 +122,13 @@ class TweetService
             ->whereDate('created_at', '<', Carbon::today()->toDateTimeString())
             ->count();
     }
-    public function saveTweet(int $userId, string $content, array $images)
+    public function saveTweet(int $userId, string $content, array $images, bool $isSecret = false)
     {
-        DB::transaction(function () use ($userId, $content, $images) {
+        DB::transaction(function () use ($userId, $content, $images, $isSecret) {
             $tweet = new Tweet;
             $tweet->user_id = $userId;
             $tweet->content = $content;
+            $tweet->is_secret = $isSecret;
             $tweet->save();
             foreach ($images as $image) {
                 $this->attachImage($tweet, $image);
@@ -131,11 +136,12 @@ class TweetService
         });
     }
 
-    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = []): void
+    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = [], bool $isSecret = false): void
     {
-        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds) {
+        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds, $isSecret) {
             $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
             $tweet->content = $content;
+            $tweet->is_secret = $isSecret;
             $tweet->save();
 
             $tweet->images

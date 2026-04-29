@@ -24,7 +24,8 @@ class PutController extends Controller
             $request->id(),
             $request->tweet(),
             $request->images(),
-            $request->deleteImageIds()
+            $request->deleteImageIds(),
+            $request->isSecret()
         );
         $returnUrl = $this->safeReturnUrl($request->returnUrl());
 

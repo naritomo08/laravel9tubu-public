@@ -21,7 +21,8 @@ class CreateController extends Controller
         $tweetService->saveTweet(
             $request->userId(),
             $request->tweet(),
-            $request->images()
+            $request->images(),
+            $request->isSecret()
         );
        return redirect()
            ->route('tweet.index', ['page' => 1])

@@ -17,9 +17,28 @@
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             140文字まで
         </p>
+        <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+            <input type="hidden" name="is_secret" value="0">
+            <input
+                type="checkbox"
+                name="is_secret"
+                value="1"
+                @checked(old('is_secret'))
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+            >
+            <span class="inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm2 6V6a2 2 0 10-4 0v2h4z" clip-rule="evenodd" />
+                </svg>
+                シークレットモード
+            </span>
+        </label>
         <x-tweet.form.images></x-tweet.form.images>
 
         @error('tweet')
+        <x-alert.error>{{ $message }}</x-alert.error>
+        @enderror
+        @error('is_secret')
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">

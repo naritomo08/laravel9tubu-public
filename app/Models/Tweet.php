@@ -5,10 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\HtmlString;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\User;
 
 class Tweet extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'is_secret' => 'boolean',
+    ];
 
     public function user()
     {
@@ -29,6 +35,21 @@ class Tweet extends Model
         return $this->likes()->count();
     }
 
+    public function scopeVisibleTo(Builder $query, ?User $user): Builder
+    {
+        if ($user?->is_admin) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $query) use ($user) {
+            $query->where('is_secret', false);
+
+            if ($user) {
+                $query->orWhere('user_id', $user->id);
+            }
+        });
+    }
+
     public function version(): string
     {
         $userUpdatedAt = $this->user?->updated_at?->toJSON();
@@ -44,6 +65,7 @@ class Tweet extends Model
 
         return sha1(json_encode([
             'tweet_updated_at' => $this->updated_at?->toJSON(),
+            'is_secret' => (bool) $this->is_secret,
             'user_updated_at' => $userUpdatedAt,
             'images' => $imageVersions,
         ]));

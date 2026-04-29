@@ -32,6 +32,7 @@ class UpdateRequest extends FormRequest
             'delete_image_ids.*' => 'integer',
             'page' => 'nullable|integer|min:1',
             'return_url' => 'nullable|string|max:2000',
+            'is_secret' => 'nullable|boolean',
         ];
     }
 
@@ -73,6 +74,11 @@ class UpdateRequest extends FormRequest
     public function deleteImageIds(): array
     {
         return array_map('intval', $this->input('delete_image_ids', []));
+    }
+
+    public function isSecret(): bool
+    {
+        return $this->boolean('is_secret');
     }
 
     public function page(): int

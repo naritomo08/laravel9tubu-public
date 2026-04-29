@@ -7,9 +7,19 @@
 
 <li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3 dark:border-gray-800" data-tweet-id="{{ $tweet->id }}" data-tweet-created-at="{{ $tweet->created_at->toJSON() }}" data-tweet-version="{{ $tweetVersion }}">
     <div class="min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%;">
-        <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs mb-2 dark:bg-gray-800 dark:text-gray-300">
-            {{ $tweet->user->name }}
-        </span>
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+            <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800 dark:text-gray-300">
+                {{ $tweet->user->name }}
+            </span>
+            @if($tweet->is_secret)
+                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800" title="シークレットモード">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm2 6V6a2 2 0 10-4 0v2h4z" clip-rule="evenodd" />
+                    </svg>
+                    シークレット
+                </span>
+            @endif
+        </div>
         <p class="text-gray-600 break-all dark:text-gray-200" style="overflow-wrap: anywhere; word-break: break-word;">{!! $tweet->formatted_content !!}</p>
         <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $tweet->created_at }}</p>
         <x-tweet.images :images="$tweet->images"/>

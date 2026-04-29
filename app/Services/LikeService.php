@@ -62,6 +62,7 @@ class LikeService
         }
 
         $existingTweetIds = Tweet::whereIn('id', $tweetIds)
+            ->visibleTo(Auth::user())
             ->pluck('id')
             ->all();
 
