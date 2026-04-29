@@ -202,7 +202,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(100テスト)
+#### php artisan test で実行されるテスト(104テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -216,6 +216,7 @@ tests/Feature/Auth/EmailVerificationTest.php
 tests/Feature/Auth/PasswordConfirmationTest.php
 tests/Feature/Auth/PasswordResetTest.php
 tests/Feature/Auth/RegistrationTest.php
+tests/Feature/Console/DeleteUnverifiedUsersTest.php
 tests/Feature/Console/SendDailyTweetCountMailTest.php
 tests/Feature/ContactTest.php
 tests/Feature/ExampleTest.php
@@ -234,15 +235,16 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
 | `tests/Unit/Models/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者によるメールアドレス変更、重複メールのバリデーション、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の降格・メール変更拒否、管理者削除拒否、集計・ユーザー一覧の動的取得、ユーザーID順表示、管理者画面ボタンの動的反映、Google連携表示、非管理者の操作拒否を検証。 |
-| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、誤パスワードでログイン失敗を検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の降格拒否、管理者削除拒否、集計・ユーザー一覧の動的取得、ユーザーID順表示、管理者画面ボタンの動的反映、Google連携表示、非管理者の操作拒否を検証。 |
+| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードでログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
-| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、署名付きURLでの認証成功/失敗を検証。 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、署名付きURLでの認証成功、無効な認証リンク時の案内画面への遷移を検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
+| `tests/Feature/Console/DeleteUnverifiedUsersTest.php` | 登録後1時間を過ぎた未認証ユーザーの削除と、既存ユーザーのメール変更後アカウントが削除対象外であることを検証。 |
 | `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーへ送信されないことを検証。 |
-| `tests/Feature/ContactTest.php` | 問い合わせ画面表示、ログイン済みユーザー情報の初期表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
+| `tests/Feature/ContactTest.php` | 問い合わせ画面のログイン必須、ログイン済みユーザー情報の固定表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
 | `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
