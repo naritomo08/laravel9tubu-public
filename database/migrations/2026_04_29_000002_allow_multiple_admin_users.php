@@ -25,7 +25,7 @@ return new class extends Migration
         });
 
         DB::table('users')
-            ->where('email', 'webadmin@naritomo.org')
+            ->where('email', 'admin@tubuyaki.org')
             ->where('is_admin', true)
             ->update(['is_seed_admin' => true]);
     }
