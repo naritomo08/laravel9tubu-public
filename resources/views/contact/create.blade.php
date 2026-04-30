@@ -1,4 +1,4 @@
-<x-layout title="お問い合わせ | つぶやきアプリ">
+<x-layout :title="'お問い合わせ | ' . config('app.name', 'Laravel')">
     <x-layout.single>
         <h2 class="text-center text-blue-700 text-3xl font-bold mt-8 mb-8">
             お問い合わせ

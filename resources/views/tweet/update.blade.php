@@ -1,7 +1,7 @@
-<x-layout title="編集 | つぶやきアプリ">
+<x-layout :title="'編集 | ' . config('app.name', 'Laravel')">
     <x-layout.single>
         <h2 class="text-center text-blue-500 text-4xl font-bold mt-8 mb-8">
-            編集 | つぶやきアプリ
+            編集 | {{ config('app.name', 'Laravel') }}
         </h2>
         @php
             $topUrl = $returnUrl ?? route('tweet.index', ['page' => $returnPage ?? 1]);

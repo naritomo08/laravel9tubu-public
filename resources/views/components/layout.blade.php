@@ -18,7 +18,7 @@
         })();
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <title>{{ $title ?? 'つぶやきアプリ' }}</title>
+    <title>{{ $title ?? config('app.name', 'Laravel') }}</title>
     @stack('css')
 </head>
 <body class="bg-gray-50 text-gray-900 transition-colors dark:bg-gray-950 dark:text-gray-100">
