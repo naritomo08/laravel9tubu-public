@@ -1,4 +1,4 @@
-<x-layout title="ユーザー管理 | 管理者画面">
+<x-layout :title="'ユーザー管理 | ' . config('app.name', 'Laravel') . ' 管理者画面'">
     <x-layout.single>
         <div
             data-admin-access-watch

@@ -1,4 +1,4 @@
-<x-layout title="アカウント設定 | つぶやきアプリ">
+<x-layout :title="'アカウント設定 | ' . config('app.name', 'Laravel')">
     <x-layout.single>
         <h2 class="text-center text-blue-700 text-3xl font-bold mt-8 mb-8">
             アカウント設定

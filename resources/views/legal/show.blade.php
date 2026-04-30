@@ -1,4 +1,4 @@
-<x-layout title="{{ $title }} | つぶやきアプリ">
+<x-layout :title="$title . ' | ' . config('app.name', 'Laravel')">
     <x-layout.single>
         <article class="px-4 pb-12">
             <div class="mb-6">
