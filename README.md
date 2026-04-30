@@ -86,7 +86,7 @@ http://127.0.0.1:8080/tweet
 
 お問い合わせはログイン後に表示される `/contact` から送信できます。ログイン中ユーザーのユーザー名とメールアドレスを固定表示し、問い合わせ内容を入力すると、管理者宛にメールがキューで送信されます。
 
-管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `webadmin@naritomo.org` 宛に送信されます。
+管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `admin@tubuyaki.com` 宛に送信されます。
 
 本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。
 
@@ -291,19 +291,21 @@ https://qiita.com/mnoguchi/items/7d7795444afb9d9dafa8
 ## 管理者画面
 
 管理者画面にアクセスしたい際は
-以下のアカウントで入ることができます。
+初期値では以下のアカウントで入ることができます。
 
 ユーザ：admin@tubuyaki.com
 パスワード：test
 
 トップ画面にリンクが乗り、各アカウント情報確認と削除が行えます。
 
-管理者アカウント情報は以下のファイルを変更して再度適用してください。
+管理者アカウント情報は `backend/.env` の以下の値で変更できます。
 
 設定ファイル：
 
 ```bash
-database/seeeders/UsersSeeder.php
+SEED_ADMIN_NAME=admin
+SEED_ADMIN_EMAIL=admin@tubuyaki.com
+SEED_ADMIN_PASSWORD=test
 ```
 
 適用：

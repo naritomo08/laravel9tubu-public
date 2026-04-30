@@ -18,9 +18,9 @@ class UsersSeeder extends Seeder
     {
         DB::transaction(function () {
             $seedAdmin = [
-                'name' => 'admin',
-                'email' => 'admin@tubuyaki.com',
-                'password' => bcrypt('test'),
+                'name' => config('seed.admin.name'),
+                'email' => config('seed.admin.email'),
+                'password' => bcrypt(config('seed.admin.password')),
                 'email_verified_at' => now(),
                 'is_admin' => true,
                 'is_seed_admin' => true,
