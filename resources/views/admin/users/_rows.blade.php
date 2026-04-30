@@ -18,6 +18,13 @@
             @endif
         </td>
         <td class="py-2 px-4 border-b text-center dark:border-gray-700">
+            @if($user->receives_notification_mail)
+                <span class="text-green-600 font-bold">✔</span>
+            @else
+                <span class="text-gray-400">停止</span>
+            @endif
+        </td>
+        <td class="py-2 px-4 border-b text-center dark:border-gray-700">
             @if($user->google_id)
                 <span class="text-green-600 font-bold">✔</span>
             @endif

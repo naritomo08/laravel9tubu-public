@@ -79,6 +79,19 @@ class AccountController extends Controller
         return back()->with('feedback.success', 'パスワードを変更しました。');
     }
 
+    public function updateMailSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'receives_notification_mail' => ['nullable', 'boolean'],
+        ]);
+
+        $request->user()->update([
+            'receives_notification_mail' => (bool) ($validated['receives_notification_mail'] ?? false),
+        ]);
+
+        return back()->with('feedback.success', 'メール通知設定を変更しました。');
+    }
+
     public function disconnectGoogle(Request $request)
     {
         $request->user()->forceFill([

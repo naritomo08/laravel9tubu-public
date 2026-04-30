@@ -138,6 +138,55 @@ class UserManagementTest extends TestCase
         );
     }
 
+    public function test_admin_user_list_displays_notification_mail_status()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        User::factory()->create([
+            'name' => '通知受信ユーザー',
+            'receives_notification_mail' => true,
+        ]);
+        User::factory()->create([
+            'name' => '通知停止ユーザー',
+            'receives_notification_mail' => false,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('通知メール')
+            ->assertSee('通知受信ユーザー')
+            ->assertSee('通知停止ユーザー')
+            ->assertSee('停止');
+
+        $html = $response->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/通知受信ユーザー<\/td>.*?<span class="text-green-600 font-bold">✔<\/span>/s',
+            $html
+        );
+        $this->assertMatchesRegularExpression(
+            '/通知停止ユーザー<\/td>.*?<span class="text-gray-400">停止<\/span>/s',
+            $html
+        );
+    }
+
+    public function test_admin_can_fetch_user_list_html_with_notification_mail_status()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        User::factory()->create([
+            'name' => '通知停止ユーザー',
+            'receives_notification_mail' => false,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.users.list'))
+            ->assertOk()
+            ->assertJsonStructure(['html']);
+
+        $this->assertStringContainsString('通知停止ユーザー', $response->json('html'));
+        $this->assertStringContainsString('停止', $response->json('html'));
+    }
+
     public function test_admin_can_promote_non_admin_user()
     {
         $admin = User::factory()->create(['is_admin' => true]);

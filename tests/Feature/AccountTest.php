@@ -168,6 +168,27 @@ class AccountTest extends TestCase
             ->assertSee('Googleアカウントを連携する');
     }
 
+    public function test_verified_user_can_update_mail_settings()
+    {
+        $user = User::factory()->create([
+            'receives_notification_mail' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->put('/account/mail-settings', [])
+            ->assertRedirect();
+
+        $this->assertFalse($user->refresh()->receives_notification_mail);
+
+        $this->actingAs($user)
+            ->put('/account/mail-settings', [
+                'receives_notification_mail' => '1',
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($user->refresh()->receives_notification_mail);
+    }
+
     public function test_account_screen_displays_own_stats()
     {
         $user = User::factory()->create();

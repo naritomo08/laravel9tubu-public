@@ -108,4 +108,42 @@ class SendDailyTweetCountMailTest extends TestCase
         $this->assertTrue($sentMailables[0]->toUser->is($verifiedUser));
         $this->assertFalse($sentMailables[0]->toUser->is($unverifiedUser));
     }
+
+    public function test_daily_tweet_count_mail_is_not_sent_to_users_who_disabled_it()
+    {
+        $recipient = User::factory()->create([
+            'email_verified_at' => now(),
+            'receives_notification_mail' => true,
+        ]);
+        $disabledUser = User::factory()->create([
+            'email_verified_at' => now(),
+            'receives_notification_mail' => false,
+        ]);
+
+        $sentMailables = [];
+        $mailer = Mockery::mock(Mailer::class);
+        $mailer->shouldReceive('to')->once()->with($recipient->email)->andReturnSelf();
+        $mailer->shouldReceive('send')
+            ->once()
+            ->with(Mockery::on(function ($mailable) use (&$sentMailables) {
+                if (! $mailable instanceof DailyTweetCount) {
+                    return false;
+                }
+
+                $sentMailables[] = $mailable;
+
+                return true;
+            }));
+
+        $command = new SendDailyTweetCountMail(
+            app(TweetService::class),
+            $mailer
+        );
+
+        $command->handle();
+
+        $this->assertCount(1, $sentMailables);
+        $this->assertTrue($sentMailables[0]->toUser->is($recipient));
+        $this->assertFalse($sentMailables[0]->toUser->is($disabledUser));
+    }
 }

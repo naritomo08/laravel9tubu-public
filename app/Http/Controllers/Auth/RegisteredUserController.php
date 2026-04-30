@@ -53,6 +53,7 @@ class RegisteredUserController extends Controller
 
         $allUser = User::query()
             ->whereNotNull('email_verified_at')
+            ->where('receives_notification_mail', true)
             ->get();
 
         foreach ($allUser as $user) {

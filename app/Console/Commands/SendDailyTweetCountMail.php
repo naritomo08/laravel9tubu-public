@@ -51,6 +51,7 @@ class SendDailyTweetCountMail extends Command
 
         $users = User::query()
             ->whereNotNull('email_verified_at')
+            ->where('receives_notification_mail', true)
             ->withCount('tweets')
             ->addSelect([
                 'received_likes_count' => Like::query()

@@ -60,6 +60,7 @@
                         <th class="py-2 px-4 border-b dark:border-gray-700">メール</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">管理者</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">メール認証</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">通知メール</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">Google連携</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">操作</th>
                     </tr>

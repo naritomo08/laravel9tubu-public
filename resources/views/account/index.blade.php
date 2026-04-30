@@ -69,6 +69,39 @@
         </div>
 
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="text-xl font-bold mb-4">メール通知設定</h3>
+
+            <form method="POST" action="{{ route('account.mail-settings.update') }}">
+                @csrf
+                @method('PUT')
+
+                <label for="receives_notification_mail" class="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <input
+                        id="receives_notification_mail"
+                        class="mt-1 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                        type="checkbox"
+                        name="receives_notification_mail"
+                        value="1"
+                        @checked(old('receives_notification_mail', Auth::user()->receives_notification_mail))
+                    >
+                    <span>
+                        通知メールとつぶやき数・いいね数の日次集計メールを受け取る
+                    </span>
+                </label>
+
+                <p class="text-sm text-gray-700 mt-4 dark:text-gray-300">
+                    メール認証やパスワード再設定など、アカウント利用に必要なメールは引き続き送信されます。
+                </p>
+
+                <div class="flex justify-end mt-6">
+                    <x-button>
+                        変更する
+                    </x-button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">Google連携</h3>
 
             @if (Auth::user()->google_id)

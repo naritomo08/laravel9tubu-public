@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account/google/connect', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectForLink'])->name('account.google.connect');
     Route::get('/account/stats', [\App\Http\Controllers\Account\AccountController::class, 'stats'])->name('account.stats');
     Route::put('/account/profile', [\App\Http\Controllers\Account\AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::put('/account/mail-settings', [\App\Http\Controllers\Account\AccountController::class, 'updateMailSettings'])->name('account.mail-settings.update');
     Route::put('/account/password', [\App\Http\Controllers\Account\AccountController::class, 'updatePassword'])->name('account.password.update');
     Route::delete('/account/google', [\App\Http\Controllers\Account\AccountController::class, 'disconnectGoogle'])->name('account.google.disconnect');
     Route::delete('/account', [\App\Http\Controllers\Account\AccountController::class, 'destroy'])->name('account.destroy');
