@@ -314,8 +314,8 @@ class UserManagementTest extends TestCase
 
         $seedAdmin->refresh();
 
-        $this->assertSame('admin', $seedAdmin->name);
-        $this->assertSame('admin@tubuyaki.com', $seedAdmin->email);
+        $this->assertSame(config('seed.admin.name'), $seedAdmin->name);
+        $this->assertSame(config('seed.admin.email'), $seedAdmin->email);
         $this->assertTrue($seedAdmin->is_admin);
         $this->assertTrue($seedAdmin->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());
@@ -324,7 +324,7 @@ class UserManagementTest extends TestCase
     public function test_same_name_user_is_overwritten_by_users_seeder()
     {
         $sameNameUser = User::factory()->create([
-            'name' => 'admin',
+            'name' => config('seed.admin.name'),
             'email' => 'same-name@example.com',
             'is_admin' => false,
             'is_seed_admin' => false,
@@ -334,11 +334,29 @@ class UserManagementTest extends TestCase
 
         $sameNameUser->refresh();
 
-        $this->assertSame('admin', $sameNameUser->name);
-        $this->assertSame('admin@tubuyaki.com', $sameNameUser->email);
+        $this->assertSame(config('seed.admin.name'), $sameNameUser->name);
+        $this->assertSame(config('seed.admin.email'), $sameNameUser->email);
         $this->assertTrue($sameNameUser->is_admin);
         $this->assertTrue($sameNameUser->is_seed_admin);
         $this->assertSame(1, User::where('is_seed_admin', true)->count());
+    }
+
+    public function test_users_seeder_uses_seed_admin_config_values()
+    {
+        config([
+            'seed.admin.name' => 'env-admin',
+            'seed.admin.email' => 'env-admin@example.com',
+            'seed.admin.password' => 'env-password',
+        ]);
+
+        $this->seed(UsersSeeder::class);
+
+        $seedAdmin = User::where('is_seed_admin', true)->firstOrFail();
+
+        $this->assertSame('env-admin', $seedAdmin->name);
+        $this->assertSame('env-admin@example.com', $seedAdmin->email);
+        $this->assertTrue(password_verify('env-password', $seedAdmin->password));
+        $this->assertTrue($seedAdmin->is_admin);
     }
 
     public function test_admin_user_can_not_be_deleted()
