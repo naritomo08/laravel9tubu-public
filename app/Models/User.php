@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'receives_notification_mail',
         'is_admin',
         'is_seed_admin',
         'google_id',
@@ -46,6 +47,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'receives_notification_mail' => 'boolean',
         'is_admin' => 'boolean',
         'is_seed_admin' => 'boolean',
         'google_connected_at' => 'datetime',

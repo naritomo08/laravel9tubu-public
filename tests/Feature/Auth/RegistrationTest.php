@@ -39,6 +39,10 @@ class RegistrationTest extends TestCase
             'email_verified_at' => now(),
         ]);
         $unverifiedUser = User::factory()->unverified()->create();
+        $disabledUser = User::factory()->create([
+            'email_verified_at' => now(),
+            'receives_notification_mail' => false,
+        ]);
 
         $this->post('/register', [
             'name' => 'Test User',
@@ -53,6 +57,9 @@ class RegistrationTest extends TestCase
         });
         Mail::assertNotQueued(NewUserIntroduction::class, function (NewUserIntroduction $mail) use ($unverifiedUser) {
             return $mail->toUser->is($unverifiedUser);
+        });
+        Mail::assertNotQueued(NewUserIntroduction::class, function (NewUserIntroduction $mail) use ($disabledUser) {
+            return $mail->toUser->is($disabledUser);
         });
     }
 }
