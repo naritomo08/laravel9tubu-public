@@ -9,9 +9,9 @@ trait CreatesApplication
     private const TEST_APP_KEY = 'base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     private const TEST_CONFIG_CACHE = __DIR__.'/../bootstrap/cache/testing-config.php';
     private const TEST_ENV = 'testing';
-    private const TEST_DB_CONNECTION = 'mysql';
+    private const TEST_DB_CONNECTION = 'pgsql';
     private const TEST_DB_HOST = 'db.test';
-    private const TEST_DB_PORT = '3306';
+    private const TEST_DB_PORT = '5432';
     private const TEST_DB_DATABASE = 'laravel_test';
     private const TEST_DB_USERNAME = 'phper';
     private const TEST_DB_PASSWORD = 'secret';

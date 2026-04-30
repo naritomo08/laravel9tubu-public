@@ -22,9 +22,9 @@
         <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" force="true"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
-        <env name="DB_CONNECTION" value="mysql" force="true"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
         <env name="DB_HOST" value="db.test" force="true"/>
-        <env name="DB_PORT" value="3306" force="true"/>
+        <env name="DB_PORT" value="5432" force="true"/>
         <env name="DB_DATABASE" value="laravel_test" force="true"/>
         <env name="DB_USERNAME" value="phper" force="true"/>
         <env name="DB_PASSWORD" value="secret" force="true"/>

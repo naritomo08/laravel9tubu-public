@@ -116,21 +116,14 @@ class LoginTest extends DuskTestCase
         $connection = 'dusk_application';
         $appEnv = $this->getApplicationProcessEnvironment();
 
-        Config::set("database.connections.{$connection}", [
-            'driver' => 'mysql',
-            'host' => env('DUSK_APP_DB_HOST', $appEnv['DB_HOST'] ?? env('DB_HOST', 'db')),
-            'port' => env('DUSK_APP_DB_PORT', '3306'),
-            'database' => env('DUSK_APP_DB_DATABASE', $appEnv['DB_DATABASE'] ?? env('DB_DATABASE', 'laravel_local')),
-            'username' => env('DUSK_APP_DB_USERNAME', $appEnv['DB_USERNAME'] ?? env('DB_USERNAME', 'phper')),
-            'password' => env('DUSK_APP_DB_PASSWORD', $appEnv['DB_PASSWORD'] ?? env('DB_PASSWORD', 'secret')),
-            'unix_socket' => '',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-        ]);
+        Config::set("database.connections.{$connection}", $this->databaseConnectionConfig(
+            env('DUSK_APP_DB_CONNECTION', $appEnv['DB_CONNECTION'] ?? env('DB_CONNECTION', 'pgsql')),
+            env('DUSK_APP_DB_HOST', $appEnv['DB_HOST'] ?? env('DB_HOST', 'db')),
+            env('DUSK_APP_DB_PORT', $appEnv['DB_PORT'] ?? env('DB_PORT', '5432')),
+            env('DUSK_APP_DB_DATABASE', $appEnv['DB_DATABASE'] ?? env('DB_DATABASE', 'laravel_local')),
+            env('DUSK_APP_DB_USERNAME', $appEnv['DB_USERNAME'] ?? env('DB_USERNAME', 'phper')),
+            env('DUSK_APP_DB_PASSWORD', $appEnv['DB_PASSWORD'] ?? env('DB_PASSWORD', 'secret')),
+        ));
 
         return $connection;
     }
@@ -139,13 +132,49 @@ class LoginTest extends DuskTestCase
     {
         $connection = 'dusk_local_application';
 
-        Config::set("database.connections.{$connection}", [
+        Config::set("database.connections.{$connection}", $this->databaseConnectionConfig(
+            env('DUSK_LOCAL_DB_CONNECTION', env('DB_CONNECTION', 'pgsql')),
+            env('DUSK_LOCAL_DB_HOST', 'db'),
+            env('DUSK_LOCAL_DB_PORT', env('DB_PORT', '5432')),
+            env('DUSK_LOCAL_DB_DATABASE', 'laravel_local'),
+            env('DUSK_LOCAL_DB_USERNAME', 'phper'),
+            env('DUSK_LOCAL_DB_PASSWORD', 'secret'),
+        ));
+
+        return $connection;
+    }
+
+    private function databaseConnectionConfig(
+        string $driver,
+        string $host,
+        string $port,
+        string $database,
+        string $username,
+        string $password
+    ): array {
+        if ($driver === 'pgsql') {
+            return [
+                'driver' => 'pgsql',
+                'host' => $host,
+                'port' => $port,
+                'database' => $database,
+                'username' => $username,
+                'password' => $password,
+                'charset' => 'utf8',
+                'prefix' => '',
+                'prefix_indexes' => true,
+                'search_path' => 'public',
+                'sslmode' => 'prefer',
+            ];
+        }
+
+        return [
             'driver' => 'mysql',
-            'host' => env('DUSK_LOCAL_DB_HOST', 'db'),
-            'port' => env('DUSK_LOCAL_DB_PORT', '3306'),
-            'database' => env('DUSK_LOCAL_DB_DATABASE', 'laravel_local'),
-            'username' => env('DUSK_LOCAL_DB_USERNAME', 'phper'),
-            'password' => env('DUSK_LOCAL_DB_PASSWORD', 'secret'),
+            'host' => $host,
+            'port' => $port,
+            'database' => $database,
+            'username' => $username,
+            'password' => $password,
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
@@ -153,9 +182,7 @@ class LoginTest extends DuskTestCase
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-        ]);
-
-        return $connection;
+        ];
     }
 
     private function hasUsersTable(string $connection): bool

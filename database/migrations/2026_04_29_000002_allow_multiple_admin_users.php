@@ -16,7 +16,7 @@ return new class extends Migration
 
         if ($driver === 'mysql') {
             DB::statement('DROP INDEX unique_admin ON users');
-        } elseif ($driver === 'sqlite') {
+        } elseif ($driver === 'pgsql' || $driver === 'sqlite') {
             DB::statement('DROP INDEX IF EXISTS unique_admin');
         }
 
@@ -38,6 +38,12 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('is_seed_admin');
         });
+
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE UNIQUE INDEX unique_admin ON users (is_admin) WHERE is_admin = true');
+
+            return;
+        }
 
         DB::statement('CREATE UNIQUE INDEX unique_admin ON users ((CASE WHEN is_admin = 1 THEN 1 ELSE NULL END))');
     }

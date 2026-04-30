@@ -9,11 +9,11 @@ Laravel9tubuyakisaitoソースを入手し、
 
 dockerソース
 
-https://github.com/naritomo08/laravel_docker/tree/laravel13
+https://github.com/naritomo08/laravel_docker/tree/laravel13-postgres
 
 つぶやきサイトソース
 
-https://github.com/naritomo08/laravel9tubu-public/tree/laravel13
+https://github.com/naritomo08/laravel9tubu-public/tree/laravel13-postgres
 
 ## 参考書籍
 
