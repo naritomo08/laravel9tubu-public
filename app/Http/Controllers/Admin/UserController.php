@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
+use App\Services\UserDeletionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class UserController extends Controller
             ->with('success', $makeAdmin ? '管理者にしました' : '管理者から外しました');
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user, UserDeletionService $userDeletionService)
     {
         // 管理者は削除不可
         if ($user->is_admin) {
@@ -76,11 +77,8 @@ class UserController extends Controller
         if (auth()->id() === $user->id) {
             return redirect()->route('admin.users.index')->with('error', '自分自身は削除できません');
         }
-        // いいねを先に削除（外部キー制約で自動削除されるが、明示的に削除）
-        $user->likes()->delete();
-        // 関連ツイートも削除
-        $user->tweets()->delete();
-        $user->delete();
+        $userDeletionService->delete($user);
+
         return redirect()->route('admin.users.index')->with('success', 'ユーザーを削除しました');
     }
 

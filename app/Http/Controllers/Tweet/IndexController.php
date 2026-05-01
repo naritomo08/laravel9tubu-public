@@ -3,20 +3,21 @@
 namespace App\Http\Controllers\Tweet;
 
 use App\Http\Controllers\Controller;
-use App\Services\TweetService;
+use App\Services\TweetQueryService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class IndexController extends Controller
 {
     /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function __invoke(Request $request, TweetService $tweetService)
+    public function __invoke(Request $request, TweetQueryService $tweetQueryService)
     {
-        $tweets = $tweetService->getTweets((int) $request->input('page', 1));
+        $tweets = $tweetQueryService->getTweets((int) $request->input('page', 1));
+
         return view('tweet.index')
             ->with('tweets', $tweets);
     }

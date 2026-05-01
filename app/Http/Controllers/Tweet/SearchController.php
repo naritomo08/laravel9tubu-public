@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Tweet;
 
 use App\Http\Controllers\Controller;
-use App\Services\TweetService;
+use App\Services\TweetQueryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
-    public function index(Request $request, TweetService $tweetService)
+    public function index(Request $request, TweetQueryService $tweetQueryService)
     {
         $query = (string) $request->query('q', '');
         $userSearch = $request->boolean('user_search');
         $tweets = $this->searchTweetsOnAvailablePage(
-            $tweetService,
+            $tweetQueryService,
             $query,
             $userSearch,
             (int) $request->query('page', 1)
@@ -33,7 +33,7 @@ class SearchController extends Controller
             ->with('returnUrl', $returnUrl);
     }
 
-    public function results(Request $request, TweetService $tweetService): JsonResponse
+    public function results(Request $request, TweetQueryService $tweetQueryService): JsonResponse
     {
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
@@ -44,7 +44,7 @@ class SearchController extends Controller
         $query = (string) ($validated['q'] ?? '');
         $userSearch = (bool) ($validated['user_search'] ?? false);
         $tweets = $this->searchTweetsOnAvailablePage(
-            $tweetService,
+            $tweetQueryService,
             $query,
             $userSearch,
             (int) ($validated['page'] ?? 1)
@@ -68,15 +68,15 @@ class SearchController extends Controller
     }
 
     private function searchTweetsOnAvailablePage(
-        TweetService $tweetService,
+        TweetQueryService $tweetQueryService,
         string $query,
         bool $userSearch,
         int $page
     ) {
-        $tweets = $tweetService->searchTweets($query, $userSearch, max(1, $page));
+        $tweets = $tweetQueryService->searchTweets($query, $userSearch, max(1, $page));
 
         if ($tweets->total() > 0 && $tweets->currentPage() > $tweets->lastPage()) {
-            $tweets = $tweetService->searchTweets($query, $userSearch, $tweets->lastPage());
+            $tweets = $tweetQueryService->searchTweets($query, $userSearch, $tweets->lastPage());
         }
 
         return $tweets;

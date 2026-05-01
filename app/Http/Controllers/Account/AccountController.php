@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\Like;
+use App\Services\UserDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -104,7 +104,7 @@ class AccountController extends Controller
         return back()->with('feedback.success', 'Googleアカウントの連携を解除しました。');
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request, UserDeletionService $userDeletionService)
     {
         $request->validate([
             'current_password' => ['required', 'current_password'],
@@ -120,11 +120,7 @@ class AccountController extends Controller
 
         Auth::guard('web')->logout();
 
-        DB::transaction(function () use ($user) {
-            $user->likes()->delete();
-            $user->tweets()->delete();
-            $user->delete();
-        });
+        $userDeletionService->delete($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
