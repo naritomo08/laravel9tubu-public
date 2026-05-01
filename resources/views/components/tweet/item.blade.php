@@ -28,7 +28,7 @@
                 </span>
             @endif
         </div>
-        <p class="text-gray-600 break-all dark:text-gray-200" style="overflow-wrap: anywhere; word-break: break-word;">{!! $tweet->formatted_content !!}</p>
+        <x-tweet.formatted-content :content="$tweet->content" />
         <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $tweet->created_at }}</p>
         <x-tweet.images :images="$tweet->images"/>
     </div>

@@ -202,11 +202,11 @@ php artisan dusk
 
 ```bash
 tests/Unit/ExampleTest.php
-tests/Unit/Models/TweetTest.php
 tests/Unit/Services/TweetImageServiceTest.php
 tests/Unit/Services/TweetQueryServiceTest.php
 tests/Unit/Services/TweetServiceTest.php
 tests/Unit/Services/UserDeletionServiceTest.php
+tests/Unit/View/Components/Tweet/FormattedContentTest.php
 tests/Feature/AccountTest.php
 tests/Feature/Admin/UserManagementTest.php
 tests/Feature/Auth/AuthenticationTest.php
@@ -231,11 +231,11 @@ tests/Feature/Tweet/UpdateTest.php
 | ファイル | テスト概要 |
 | --- | --- |
 | `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
-| `tests/Unit/Models/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
 | `tests/Unit/Services/TweetImageServiceTest.php` | つぶやき画像の保存・紐付けと、画像削除時のファイル・中間テーブル・画像レコード削除を検証。 |
 | `tests/Unit/Services/TweetQueryServiceTest.php` | つぶやき一覧取得時のいいね状態・件数の一括付与を検証。 |
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` の自分の投稿判定を検証。 |
 | `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ることを検証。 |
+| `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、退会処理を検証。 |
 | `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、集計・ユーザー一覧の動的取得、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードでログイン失敗を検証。 |

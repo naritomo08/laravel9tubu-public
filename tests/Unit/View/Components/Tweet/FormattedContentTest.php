@@ -1,18 +1,17 @@
 <?php
 
-namespace Tests\Unit\Models;
+namespace Tests\Unit\View\Components\Tweet;
 
-use App\Models\Tweet;
+use App\View\Components\Tweet\FormattedContent;
 use PHPUnit\Framework\TestCase;
 
-class TweetTest extends TestCase
+class FormattedContentTest extends TestCase
 {
     public function test_formatted_content_converts_urls_into_links(): void
     {
-        $tweet = new Tweet();
-        $tweet->content = "確認はこちら https://example.com/path?foo=1&bar=2\nwww.example.org.";
+        $component = new FormattedContent("確認はこちら https://example.com/path?foo=1&bar=2\nwww.example.org.");
 
-        $formattedContent = $tweet->formatted_content->toHtml();
+        $formattedContent = $component->formattedContent()->toHtml();
 
         $this->assertStringContainsString(
             '<a href="https://example.com/path?foo=1&amp;bar=2" target="_blank" rel="noopener noreferrer"',
@@ -35,10 +34,9 @@ class TweetTest extends TestCase
 
     public function test_formatted_content_keeps_html_escaped(): void
     {
-        $tweet = new Tweet();
-        $tweet->content = '<script>alert(1)</script> https://example.com';
+        $component = new FormattedContent('<script>alert(1)</script> https://example.com');
 
-        $formattedContent = $tweet->formatted_content->toHtml();
+        $formattedContent = $component->formattedContent()->toHtml();
 
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $formattedContent);
         $this->assertStringContainsString('<a href="https://example.com"', $formattedContent);
