@@ -56,6 +56,36 @@ class EmailVerificationTest extends TestCase
             ->assertSee(route('verification.status', [], false), false);
     }
 
+    public function test_tweet_screen_warns_initial_unverified_user_about_account_deletion()
+    {
+        $registeredAt = now()->subMinutes(30);
+        $user = User::factory()->unverified()->create([
+            'created_at' => $registeredAt,
+            'updated_at' => $registeredAt,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertSee('登録時のメールアドレスに届いた認証メールをご確認ください。')
+            ->assertSee('登録から1時間以内にメール認証が完了しない場合、アカウントは自動的に削除されます。');
+    }
+
+    public function test_tweet_screen_does_not_warn_existing_user_after_email_change_about_account_deletion()
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'changed@example.com',
+            'created_at' => now()->subDay(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertSee('新しいメールアドレスに届いた認証メールをご確認ください。')
+            ->assertDontSee('アカウントは自動的に削除されます。');
+    }
+
     public function test_email_can_be_verified()
     {
         $user = User::factory()->create([

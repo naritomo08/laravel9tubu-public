@@ -6,13 +6,29 @@
             </a>
         </x-slot>
 
+        @php($isPendingInitialEmailVerification = Auth::user()->isPendingInitialEmailVerification())
+
         <div class="mb-4 text-sm text-gray-600">
-            {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+            @if($isPendingInitialEmailVerification)
+                ユーザー登録ありがとうございます。登録時のメールアドレスに届いた認証メール内のリンクから、メール認証を完了してください。メールが届いていない場合は再送できます。
+            @else
+                メールアドレスの確認が完了していません。新しいメールアドレスに届いた認証メール内のリンクから、メール認証を完了してください。メールが届いていない場合は再送できます。
+            @endif
         </div>
+
+        @if($isPendingInitialEmailVerification)
+            <div class="mb-4 text-sm font-bold text-red-600">
+                ※登録から1時間以内にメール認証が完了しない場合、アカウントは自動的に削除されます。
+            </div>
+        @endif
 
         @if (session('status') == 'verification-link-sent')
             <div class="mb-4 font-medium text-sm text-green-600">
-                {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+                @if($isPendingInitialEmailVerification)
+                    登録時のメールアドレスに、新しい認証メールを送信しました。
+                @else
+                    新しいメールアドレスに、認証メールを再送しました。
+                @endif
             </div>
         @endif
 

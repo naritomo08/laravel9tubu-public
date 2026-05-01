@@ -198,7 +198,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(114テスト)
+#### php artisan test で実行されるテスト(119テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -240,7 +240,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、集計・ユーザー一覧の動的取得、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードでログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
-| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、署名付きURLでの認証成功、無効な認証リンク時の案内画面への遷移を検証。 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示、新規登録後の認証状態・遷移先、認証済みユーザーへの紹介メール送信を検証。 |
@@ -252,7 +252,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
-| `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索チェックボックス、`user:""` を通常キーワードとして扱うことを検証。 |
+| `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索時は入力文字列では絞り込まず選択ユーザーで絞り込むこと、ユーザー選択候補の表示・JSON取得、登録直後の未認証ユーザー除外とメール変更後の未認証ユーザー表示、`user:""` を通常キーワードとして扱うことを検証。 |
 | `tests/Feature/Tweet/SecretModeTest.php` | シークレットモードのつぶやきが投稿者本人と管理者だけに表示されること、作成・編集時に設定が保存されること、検索・新着取得・いいね状態取得・いいね操作で第三者に参照されないことを検証。 |
 | `tests/Feature/Tweet/UpdateTest.php` | つぶやき編集時の画像追加・削除、画像合計4枚までのバリデーション、検索画面から編集した場合は検索条件を維持して戻り通知が出ることを検証。 |
 

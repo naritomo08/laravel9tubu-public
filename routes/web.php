@@ -53,6 +53,7 @@ Route::middleware('auth')->get('/account/admin-status', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tweet/search', [\App\Http\Controllers\Tweet\SearchController::class, 'index'])->name('tweet.search');
     Route::get('/tweet/search/results', [\App\Http\Controllers\Tweet\SearchController::class, 'results'])->name('tweet.search.results');
+    Route::get('/tweet/search/users', [\App\Http\Controllers\Tweet\SearchController::class, 'users'])->name('tweet.search.users');
     Route::post('/tweet/create', \App\Http\Controllers\Tweet\CreateController::class)
         ->name('tweet.create');
     Route::get('/tweet/update/{tweetId}', \App\Http\Controllers\Tweet\Update\IndexController::class)->name('tweet.update.index');

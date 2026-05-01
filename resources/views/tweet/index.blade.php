@@ -10,8 +10,12 @@
                 data-status-url="{{ route('verification.status', [], false) }}"
                 data-verified-url="{{ route('tweet.index', ['verified' => 1], false) }}"
             >
-                メール認証が完了していません。認証メールをご確認ください。<br>
-                <span class="text-red-600 font-bold">※メール認証が1時間以内に完了しない場合、アカウントは自動的に削除されます。</span>
+                @if(Auth::user()->isPendingInitialEmailVerification())
+                    メール認証が完了していません。登録時のメールアドレスに届いた認証メールをご確認ください。<br>
+                    <span class="text-red-600 font-bold">※登録から1時間以内にメール認証が完了しない場合、アカウントは自動的に削除されます。</span>
+                @else
+                    メール認証が完了していません。新しいメールアドレスに届いた認証メールをご確認ください。
+                @endif
                 <form method="POST" action="{{ route('verification.send') }}">
                     @csrf
                     <button type="submit" class="underline text-blue-600">認証メールを再送する</button>
