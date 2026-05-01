@@ -251,7 +251,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/ContactTest.php` | 問い合わせ画面のログイン必須、ログイン済みユーザー情報の固定表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
 | `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
-| `tests/Feature/Tweet/ContentLengthTest.php` | つぶやき作成・編集で設定値に基づく最大文字数バリデーションが効くこと、投稿フォーム・編集フォームに最大文字数が表示されることを検証。 |
+| `tests/Feature/Tweet/ContentLengthTest.php` | つぶやき作成・編集で設定値に基づく最大文字数バリデーションが効くこと、投稿フォーム・編集フォームに最大文字数表示と動的カウント用の設定が出力されることを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |

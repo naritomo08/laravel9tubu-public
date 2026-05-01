@@ -66,4 +66,12 @@
     .markdown-body strong {
         @apply font-bold text-gray-900 dark:text-white;
     }
+
+    .tweet-content-highlight mark {
+        @apply rounded-sm bg-red-200 text-transparent dark:bg-red-500/40;
+    }
+
+    button[data-tweet-submit]:disabled {
+        @apply cursor-not-allowed bg-gray-400 text-white hover:bg-gray-400 focus:ring-gray-400 opacity-70;
+    }
 }
