@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Tweet;
 
 use App\Http\Controllers\Controller;
-use App\Services\TweetService;
+use App\Services\TweetQueryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LatestController extends Controller
 {
-    public function __invoke(Request $request, TweetService $tweetService): JsonResponse
+    public function __invoke(Request $request, TweetQueryService $tweetQueryService): JsonResponse
     {
         $validated = $request->validate([
             'after_id' => ['nullable', 'integer', 'min:0'],
@@ -17,10 +17,10 @@ class LatestController extends Controller
             'include_snapshot' => ['nullable', 'boolean'],
         ]);
 
-        $tweets = $tweetService->getTweetsNewerThan((int) ($validated['after_id'] ?? 0));
+        $tweets = $tweetQueryService->getTweetsNewerThan((int) ($validated['after_id'] ?? 0));
         $tweetVersions = $this->decodeTweetVersions($validated['tweet_versions'] ?? null);
-        $changedTweets = $tweetService->getChangedTweets($tweetVersions);
-        $firstPageTweets = $tweetService->getTweets(1);
+        $changedTweets = $tweetQueryService->getChangedTweets($tweetVersions);
+        $firstPageTweets = $tweetQueryService->getTweets(1);
         $firstPageTweets->withPath(route('tweet.index'));
         $includeSnapshot = $request->boolean('include_snapshot');
         $paginationHtml = $firstPageTweets->hasPages()
@@ -33,7 +33,7 @@ class LatestController extends Controller
             ])->render()
             : null;
         $snapshotSignature = $includeSnapshot
-            ? implode(',', $firstPageTweets->getCollection()->pluck('id')->all()) . '|' . $firstPageTweets->total()
+            ? implode(',', $firstPageTweets->getCollection()->pluck('id')->all()).'|'.$firstPageTweets->total()
             : null;
 
         return response()->json([
@@ -59,13 +59,13 @@ class LatestController extends Controller
 
     private function decodeTweetVersions(?string $tweetVersions): array
     {
-        if (!$tweetVersions) {
+        if (! $tweetVersions) {
             return [];
         }
 
         $decodedTweetVersions = json_decode($tweetVersions, true);
 
-        if (!is_array($decodedTweetVersions)) {
+        if (! is_array($decodedTweetVersions)) {
             return [];
         }
 
@@ -73,7 +73,7 @@ class LatestController extends Controller
             ->mapWithKeys(function ($updatedAt, $tweetId) {
                 $tweetId = (int) $tweetId;
 
-                if ($tweetId <= 0 || !is_string($updatedAt)) {
+                if ($tweetId <= 0 || ! is_string($updatedAt)) {
                     return [];
                 }
 

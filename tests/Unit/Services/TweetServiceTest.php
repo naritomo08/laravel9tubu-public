@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\Tweet;
 use App\Models\User;
+use App\Services\TweetImageService;
 use App\Services\TweetService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,7 +21,7 @@ class TweetServiceTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $tweetService = new TweetService();
+        $tweetService = new TweetService(new TweetImageService);
 
         $this->assertTrue($tweetService->checkOwnTweet($user->id, $tweet->id));
         $this->assertFalse($tweetService->checkOwnTweet($otherUser->id, $tweet->id));

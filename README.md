@@ -64,9 +64,6 @@ php artisan migrate
 
 Seeder作成管理者アカウント設定
 php artisan db:seed --class=UsersSeeder
-
-Seeder作成管理者アカウント作成つぶやきの保護有効化
-php artisan db:seed --class=MarkSeededTweetsSeeder
 ```
 
 ## 各種サイト確認する
@@ -153,8 +150,7 @@ docker-compose exec db /bin/bash
 つぶやきサイトソース変更して反映したい際は以下コマンドを実施すること。
 
 ```bash
-docker-compose build
-docker-compose up -d
+docker-compose build && docker-compose up -d
 ```
 
 ### スケジュール実行の確認
@@ -202,12 +198,15 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(104テスト)
+#### php artisan test で実行されるテスト(114テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
 tests/Unit/Models/TweetTest.php
+tests/Unit/Services/TweetImageServiceTest.php
+tests/Unit/Services/TweetQueryServiceTest.php
 tests/Unit/Services/TweetServiceTest.php
+tests/Unit/Services/UserDeletionServiceTest.php
 tests/Feature/AccountTest.php
 tests/Feature/Admin/UserManagementTest.php
 tests/Feature/Auth/AuthenticationTest.php
@@ -232,18 +231,21 @@ tests/Feature/Tweet/UpdateTest.php
 | ファイル | テスト概要 |
 | --- | --- |
 | `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
-| `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` が自分の投稿判定を正しく返すかを確認。 |
 | `tests/Unit/Models/TweetTest.php` | Tweet モデルの formatted_content アクセサが正しく動くかを確認。 |
-| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、退会処理を検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の降格拒否、管理者削除拒否、集計・ユーザー一覧の動的取得、ユーザーID順表示、管理者画面ボタンの動的反映、Google連携表示、非管理者の操作拒否を検証。 |
+| `tests/Unit/Services/TweetImageServiceTest.php` | つぶやき画像の保存・紐付けと、画像削除時のファイル・中間テーブル・画像レコード削除を検証。 |
+| `tests/Unit/Services/TweetQueryServiceTest.php` | つぶやき一覧取得時のいいね状態・件数の一括付与を検証。 |
+| `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` の自分の投稿判定を検証。 |
+| `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ることを検証。 |
+| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、退会処理を検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、集計・ユーザー一覧の動的取得、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードでログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
-| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、署名付きURLでの認証成功、無効な認証リンク時の案内画面への遷移を検証。 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、署名付きURLでの認証成功、無効な認証リンク時の案内画面への遷移を検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
-| `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示と新規登録後の認証状態・遷移先を検証。 |
+| `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示、新規登録後の認証状態・遷移先、認証済みユーザーへの紹介メール送信を検証。 |
 | `tests/Feature/Console/DeleteUnverifiedUsersTest.php` | 登録後1時間を過ぎた未認証ユーザーの削除と、既存ユーザーのメール変更後アカウントが削除対象外であることを検証。 |
-| `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーへ送信されないことを検証。 |
+| `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーや通知無効ユーザーへ送信されないことを検証。 |
 | `tests/Feature/ContactTest.php` | 問い合わせ画面のログイン必須、ログイン済みユーザー情報の固定表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
 | `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
@@ -311,8 +313,7 @@ SEED_ADMIN_PASSWORD=test
 適用：
 
 ```bash
-docker-compose build
-docker-compose up -d
+docker-compose build && docker-compose up -d
 docker-compose exec app /bin/bash
 php artisan db:seed --class=UsersSeeder
 ```
@@ -328,11 +329,9 @@ php artisan db:seed --class=UsersSeeder
 database/seeeders/TweetsSeeder.php
 ```
 
-適用：
+適用(事前にUsersSeederを実施していること。)：
 
 ```bash
-docker-compose build
-docker-compose up -d
 docker-compose exec app /bin/bash
 php artisan db:seed --class=TweetsSeeder
 ```
@@ -369,6 +368,9 @@ vi backend/app/Console/Kernel.php
         $schedule->command('users:delete-unverified')->everyMinute();
     }
 
+適用：
+
+docker-compose build && docker-compose up -d
 ```
 
 >この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
