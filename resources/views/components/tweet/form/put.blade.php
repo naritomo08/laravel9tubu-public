@@ -14,17 +14,7 @@
         @if($returnUrl)
             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
         @endif
-        <div class="mt-1">
-            <textarea
-                name="tweet"
-                rows="3"
-                maxlength="{{ $tweetMaxLength }}"
-                class="focus:ring-blue-400 focus:border-blue-400 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
-                placeholder="つぶやきを入力">{{ $tweet->content }}</textarea>
-        </div>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {{ $tweetMaxLength }}文字まで
-        </p>
+        <x-tweet.form.content :value="old('tweet', $tweet->content)" :maxLength="$tweetMaxLength"></x-tweet.form.content>
         <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <input type="hidden" name="is_secret" value="0">
             <input
@@ -101,7 +91,7 @@
         @enderror
 
         <div class="flex flex-wrap justify-end">
-            <x-element.button>
+            <x-element.button data-tweet-submit>
                 編集
             </x-element.button>
         </div>

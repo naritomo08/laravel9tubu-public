@@ -67,12 +67,12 @@ class ContentLengthTest extends TestCase
 
         $this->actingAs($user)->get('/tweet')
             ->assertOk()
-            ->assertSee('maxlength="5"', false)
+            ->assertSee('data-tweet-max-length="5"', false)
             ->assertSee('5文字まで');
 
         $this->actingAs($user)->get('/tweet/update/'.$tweet->id)
             ->assertOk()
-            ->assertSee('maxlength="5"', false)
+            ->assertSee('data-tweet-max-length="5"', false)
             ->assertSee('5文字まで');
     }
 }
