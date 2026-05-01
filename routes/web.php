@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account', [\App\Http\Controllers\Account\AccountController::class, 'index'])->name('account.index');
     Route::get('/account/google/connect', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectForLink'])->name('account.google.connect');
     Route::get('/account/stats', [\App\Http\Controllers\Account\AccountController::class, 'stats'])->name('account.stats');
+    Route::get('/account/scheduled-tweets', [\App\Http\Controllers\Account\AccountController::class, 'scheduledTweets'])->name('account.scheduled-tweets');
     Route::put('/account/profile', [\App\Http\Controllers\Account\AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/account/mail-settings', [\App\Http\Controllers\Account\AccountController::class, 'updateMailSettings'])->name('account.mail-settings.update');
     Route::put('/account/password', [\App\Http\Controllers\Account\AccountController::class, 'updatePassword'])->name('account.password.update');
@@ -78,6 +79,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/users/stats', [\App\Http\Controllers\Admin\UserController::class, 'stats'])->name('admin.users.stats');
     Route::get('/admin/users/list', [\App\Http\Controllers\Admin\UserController::class, 'listUsers'])->name('admin.users.list');
+    Route::get('/admin/users/scheduled-tweets', [\App\Http\Controllers\Admin\UserController::class, 'listScheduledTweets'])->name('admin.users.scheduled-tweets');
     Route::put('/admin/users/{user}/admin', [\App\Http\Controllers\Admin\UserController::class, 'updateAdmin'])->name('admin.users.admin.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 });

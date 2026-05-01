@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use App\Models\User;
 
 class Tweet extends Model
@@ -15,6 +16,7 @@ class Tweet extends Model
         'is_secret' => 'boolean',
         'is_seeded' => 'boolean',
         'is_protected' => 'boolean',
+        'scheduled_at' => 'datetime',
     ];
 
     public function user()
@@ -38,6 +40,11 @@ class Tweet extends Model
 
     public function scopeVisibleTo(Builder $query, ?User $user): Builder
     {
+        $query->where(function (Builder $query) {
+            $query->whereNull('scheduled_at')
+                ->orWhere('scheduled_at', '<=', now());
+        });
+
         if ($user?->is_admin) {
             return $query;
         }
@@ -49,6 +56,11 @@ class Tweet extends Model
                 $query->orWhere('user_id', $user->id);
             }
         });
+    }
+
+    public function postedAt(): ?Carbon
+    {
+        return $this->scheduled_at ?? $this->created_at;
     }
 
     public function version(): string
@@ -66,6 +78,8 @@ class Tweet extends Model
 
         return sha1(json_encode([
             'tweet_updated_at' => $this->updated_at?->toJSON(),
+            'scheduled_at' => $this->scheduled_at?->toJSON(),
+            'posted_at' => $this->postedAt()?->toJSON(),
             'is_secret' => (bool) $this->is_secret,
             'is_protected' => (bool) $this->is_protected,
             'user_updated_at' => $userUpdatedAt,

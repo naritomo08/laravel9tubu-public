@@ -6,6 +6,7 @@ use Database\Seeders\UsersSeeder;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -89,6 +90,93 @@ class UserManagementTest extends TestCase
             ->assertJsonStructure(['html']);
 
         $this->assertStringContainsString('動的更新ユーザー', $response->json('html'));
+    }
+
+    public function test_admin_screen_displays_only_upcoming_scheduled_tweets()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create(['name' => '予約ユーザー']);
+
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'future scheduled admin tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'expired scheduled admin tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 09:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'normal admin tweet',
+            'scheduled_at' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('予約投稿一覧')
+            ->assertSee('予約ユーザー')
+            ->assertSee('future scheduled admin tweet')
+            ->assertSee('2026-05-01 11:00:00')
+            ->assertSee('削除')
+            ->assertDontSee('expired scheduled admin tweet')
+            ->assertDontSee('normal admin tweet');
+    }
+
+    public function test_admin_can_fetch_upcoming_scheduled_tweets_html_json()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create(['name' => '動的予約ユーザー']);
+
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'dynamic future scheduled admin tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'dynamic expired scheduled admin tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 09:00:00'),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.users.scheduled-tweets'))
+            ->assertOk()
+            ->assertJsonStructure(['html']);
+
+        $this->assertStringContainsString('動的予約ユーザー', $response->json('html'));
+        $this->assertStringContainsString('dynamic future scheduled admin tweet', $response->json('html'));
+        $this->assertStringContainsString('削除', $response->json('html'));
+        $this->assertStringNotContainsString('dynamic expired scheduled admin tweet', $response->json('html'));
+    }
+
+    public function test_admin_can_delete_scheduled_tweet_from_admin_screen()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'admin deletable scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('tweet.delete', $tweet), [
+                'return_url' => route('admin.users.index', [], false),
+            ])
+            ->assertRedirect(route('admin.users.index', [], false));
+
+        $this->assertDatabaseMissing('tweets', [
+            'id' => $tweet->id,
+        ]);
     }
 
     public function test_admin_user_list_is_ordered_by_user_id()

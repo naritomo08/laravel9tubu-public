@@ -4,8 +4,9 @@
     'returnUrl' => null,
 ])
 @php($tweetVersion = $tweet->version())
+@php($postedAt = $tweet->postedAt())
 
-<li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3 dark:border-gray-800" data-tweet-id="{{ $tweet->id }}" data-tweet-created-at="{{ $tweet->created_at->toJSON() }}" data-tweet-version="{{ $tweetVersion }}">
+<li class="border-b last:border-b-0 border-gray-200 p-4 flex items-start gap-3 dark:border-gray-800" data-tweet-id="{{ $tweet->id }}" data-tweet-created-at="{{ $postedAt?->toJSON() }}" data-tweet-version="{{ $tweetVersion }}">
     <div class="min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%;">
         <div class="mb-2 flex flex-wrap items-center gap-2">
             <span class="inline-block rounded-full text-gray-600 bg-gray-100 px-2 py-1 text-xs dark:bg-gray-800 dark:text-gray-300">
@@ -29,7 +30,7 @@
             @endif
         </div>
         <x-tweet.formatted-content :content="$tweet->content" />
-        <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $tweet->created_at }}</p>
+        <p class="text-gray-600 mt-1 dark:text-gray-400">{{ $postedAt }}</p>
         <x-tweet.images :images="$tweet->images"/>
     </div>
     <div class="shrink-0 flex items-center gap-2">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ScheduledTweetService;
 use App\Services\UserDeletionService;
 use App\Services\UserStatsService;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,7 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly UserStatsService $userStatsService,
+        private readonly ScheduledTweetService $scheduledTweetService,
     ) {}
 
     public function index()
@@ -22,6 +24,7 @@ class UserController extends Controller
         return view('admin.users.index', [
             'users' => $users,
             'stats' => $this->userStatsService->buildAdminStatsPayload($users),
+            'scheduledTweets' => $this->scheduledTweetService->getUpcomingTweets(),
         ]);
     }
 
@@ -37,6 +40,15 @@ class UserController extends Controller
         return response()->json([
             'html' => view('admin.users._rows', [
                 'users' => $this->userStatsService->getUsersWithStats(),
+            ])->render(),
+        ]);
+    }
+
+    public function listScheduledTweets(): JsonResponse
+    {
+        return response()->json([
+            'html' => view('admin.users._scheduled_tweets', [
+                'scheduledTweets' => $this->scheduledTweetService->getUpcomingTweets(),
             ])->render(),
         ]);
     }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -208,6 +209,124 @@ class AccountTest extends TestCase
             ->assertSee('あなたの集計')
             ->assertSee('2')
             ->assertSee('2');
+    }
+
+    public function test_account_screen_displays_only_own_upcoming_scheduled_tweets()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'own future scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'own expired scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 09:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $otherUser->id,
+            'content' => 'other future scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:30:00'),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/account')
+            ->assertOk()
+            ->assertSee('あなたの予約投稿一覧')
+            ->assertSee('own future scheduled tweet')
+            ->assertSee('2026-05-01 11:00:00')
+            ->assertSee('編集')
+            ->assertSee('削除')
+            ->assertDontSee('own expired scheduled tweet')
+            ->assertDontSee('other future scheduled tweet');
+    }
+
+    public function test_account_can_fetch_own_upcoming_scheduled_tweets_html_json()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'dynamic own future scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+        Tweet::factory()->create([
+            'user_id' => $otherUser->id,
+            'content' => 'dynamic other future scheduled tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:30:00'),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('account.scheduled-tweets'))
+            ->assertOk()
+            ->assertJsonStructure(['html']);
+
+        $this->assertStringContainsString('dynamic own future scheduled tweet', $response->json('html'));
+        $this->assertStringContainsString('編集', $response->json('html'));
+        $this->assertStringContainsString('削除', $response->json('html'));
+        $this->assertStringNotContainsString('dynamic other future scheduled tweet', $response->json('html'));
+    }
+
+    public function test_user_can_edit_own_scheduled_tweet_from_account_screen()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'before scheduled account edit',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.update.index', [
+                'tweetId' => $tweet->id,
+                'return_url' => route('account.index', [], false),
+            ]))
+            ->assertOk()
+            ->assertSee('value="2026-05-01T11:00"', false);
+
+        $this->actingAs($user)
+            ->put(route('tweet.update.put', $tweet), [
+                'tweet' => 'after scheduled account edit',
+                'scheduled_at' => '2026-05-01T12:00',
+                'return_url' => route('account.index', [], false),
+            ])
+            ->assertRedirect(route('account.index', [], false));
+
+        $tweet->refresh();
+        $this->assertSame('after scheduled account edit', $tweet->content);
+        $this->assertSame('2026-05-01 12:00:00', $tweet->scheduled_at->format('Y-m-d H:i:s'));
+    }
+
+    public function test_user_can_delete_own_scheduled_tweet_from_account_screen()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'deletable scheduled account tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+
+        $this->actingAs($user)
+            ->delete(route('tweet.delete', $tweet), [
+                'return_url' => route('account.index', [], false),
+            ])
+            ->assertRedirect(route('account.index', [], false));
+
+        $this->assertDatabaseMissing('tweets', [
+            'id' => $tweet->id,
+        ]);
     }
 
     public function test_account_stats_endpoint_returns_authenticated_user_stats()

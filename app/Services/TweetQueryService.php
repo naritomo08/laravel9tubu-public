@@ -16,7 +16,7 @@ class TweetQueryService
         $tweets = Tweet::with(['user', 'images'])
             ->withCount('likes')
             ->visibleTo(Auth::user())
-            ->orderBy('created_at', 'DESC')
+            ->orderByRaw('COALESCE(scheduled_at, created_at) DESC')
             ->orderBy('id', 'DESC')
             ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
         $this->attachLikeAttributes($tweets->getCollection());
@@ -81,7 +81,7 @@ class TweetQueryService
             ->when($userSearch && $userId, function ($tweetQuery) use ($userId) {
                 $tweetQuery->where('user_id', $userId);
             })
-            ->orderBy('created_at', 'DESC')
+            ->orderByRaw('COALESCE(scheduled_at, created_at) DESC')
             ->orderBy('id', 'DESC')
             ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
 

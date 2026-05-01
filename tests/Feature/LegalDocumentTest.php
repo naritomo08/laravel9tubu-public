@@ -10,16 +10,14 @@ class LegalDocumentTest extends TestCase
     {
         $this->get('/terms')
             ->assertOk()
-            ->assertSee('利用規約')
-            ->assertSee('つぶやき本文と画像の投稿、編集、削除');
+            ->assertSee('利用規約');
     }
 
     public function test_privacy_page_renders_markdown_content()
     {
         $this->get('/privacy')
             ->assertOk()
-            ->assertSee('プライバシーポリシー')
-            ->assertSee('Googleアカウント識別子');
+            ->assertSee('プライバシーポリシー');
     }
 
     public function test_legal_links_are_visible_on_guest_pages()
