@@ -376,3 +376,28 @@ docker-compose build && docker-compose up -d
 >この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
 >`queue` コンテナが `php artisan queue:work` を常駐実行します。
 >そのため、`Kernel.php` に登録したスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
+
+## npm依存の脆弱性対応
+
+フロントエンド依存の脆弱性は `package-lock.json` で固定されたバージョンに対して確認します。
+Dockerfile の `npm ci --no-audit --no-fund` は監査を省略するだけで、脆弱性を自動修正しません。
+ビルドの再現性を保つため、Docker build 中に `npm audit fix` を実行せず、手動で `package-lock.json` を更新してコミットしてください。
+
+```bash
+cd backend
+
+# 脆弱性を確認
+npm audit --audit-level=moderate
+
+# 修正可能な依存を package-lock.json に反映
+npm audit fix
+
+# 修正後に脆弱性が残っていないか確認
+npm audit --audit-level=moderate
+
+# フロントエンドのビルド確認
+npm run build
+```
+
+`npm audit fix` 後は、主に `package-lock.json` が更新されます。
+`npm audit fix --force` はメジャーバージョン更新を含む可能性があるため、通常の `npm audit fix` で解消できない場合だけ、影響範囲を確認してから実行してください。
