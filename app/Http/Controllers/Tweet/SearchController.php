@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tweet;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\TweetQueryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,22 +14,29 @@ class SearchController extends Controller
     {
         $query = (string) $request->query('q', '');
         $userSearch = $request->boolean('user_search');
+        $searchQuery = $userSearch ? '' : $query;
+        $userId = $userSearch ? $this->nullablePositiveInt($request->query('user_id')) : null;
         $tweets = $this->searchTweetsOnAvailablePage(
             $tweetQueryService,
-            $query,
+            $searchQuery,
             $userSearch,
-            (int) $request->query('page', 1)
+            (int) $request->query('page', 1),
+            $userId
         );
-        $this->preparePaginator($tweets, $query, $userSearch);
+        $this->preparePaginator($tweets, $searchQuery, $userSearch, $userId);
         $returnUrl = route('tweet.search', array_filter([
-            'q' => $query,
+            'q' => $searchQuery,
             'user_search' => $userSearch ? 1 : null,
+            'user_id' => $userSearch ? $userId : null,
             'page' => $tweets->currentPage(),
         ], fn ($value) => $value !== null && $value !== ''));
+        $users = $userSearch ? $this->searchableUsers() : collect();
 
         return view('tweet.search')
-            ->with('query', $query)
+            ->with('query', $searchQuery)
             ->with('userSearch', $userSearch)
+            ->with('selectedUserId', $userId)
+            ->with('users', $users)
             ->with('tweets', $tweets)
             ->with('returnUrl', $returnUrl);
     }
@@ -38,21 +46,26 @@ class SearchController extends Controller
         $validated = $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
             'user_search' => ['nullable', 'boolean'],
+            'user_id' => ['nullable', 'integer', 'min:1', 'exists:users,id'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $query = (string) ($validated['q'] ?? '');
         $userSearch = (bool) ($validated['user_search'] ?? false);
+        $searchQuery = $userSearch ? '' : $query;
+        $userId = $userSearch ? ($validated['user_id'] ?? null) : null;
         $tweets = $this->searchTweetsOnAvailablePage(
             $tweetQueryService,
-            $query,
+            $searchQuery,
             $userSearch,
-            (int) ($validated['page'] ?? 1)
+            (int) ($validated['page'] ?? 1),
+            $userId
         );
-        $this->preparePaginator($tweets, $query, $userSearch);
+        $this->preparePaginator($tweets, $searchQuery, $userSearch, $userId);
         $returnUrl = route('tweet.search', array_filter([
-            'q' => $query,
+            'q' => $searchQuery,
             'user_search' => $userSearch ? 1 : null,
+            'user_id' => $userSearch ? $userId : null,
             'page' => $tweets->currentPage(),
         ], fn ($value) => $value !== null && $value !== ''));
 
@@ -67,27 +80,59 @@ class SearchController extends Controller
         ]);
     }
 
+    public function users(): JsonResponse
+    {
+        return response()->json([
+            'users' => $this->searchableUsers()
+                ->map(fn (User $user) => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ])
+                ->values(),
+        ]);
+    }
+
     private function searchTweetsOnAvailablePage(
         TweetQueryService $tweetQueryService,
         string $query,
         bool $userSearch,
-        int $page
+        int $page,
+        ?int $userId
     ) {
-        $tweets = $tweetQueryService->searchTweets($query, $userSearch, max(1, $page));
+        $tweets = $tweetQueryService->searchTweets($query, $userSearch, max(1, $page), $userId);
 
         if ($tweets->total() > 0 && $tweets->currentPage() > $tweets->lastPage()) {
-            $tweets = $tweetQueryService->searchTweets($query, $userSearch, $tweets->lastPage());
+            $tweets = $tweetQueryService->searchTweets($query, $userSearch, $tweets->lastPage(), $userId);
         }
 
         return $tweets;
     }
 
-    private function preparePaginator($tweets, string $query, bool $userSearch): void
+    private function preparePaginator($tweets, string $query, bool $userSearch, ?int $userId): void
     {
         $tweets->withPath(route('tweet.search'))
             ->appends([
                 'q' => $query,
                 'user_search' => $userSearch ? 1 : 0,
+                'user_id' => $userSearch ? $userId : null,
             ]);
+    }
+
+    private function nullablePositiveInt($value): ?int
+    {
+        $intValue = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return $intValue === false ? null : $intValue;
+    }
+
+    private function searchableUsers()
+    {
+        return User::where(function ($query) {
+            $query->whereNotNull('email_verified_at')
+                ->orWhereColumn('created_at', '<>', 'updated_at');
+        })
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get(['id', 'name']);
     }
 }

@@ -18,6 +18,7 @@
             class="bg-white rounded-md shadow-lg p-4 dark:bg-gray-900 dark:shadow-gray-950/40"
             data-tweet-search
             data-search-url="{{ route('tweet.search.results', [], false) }}"
+            data-users-url="{{ route('tweet.search.users', [], false) }}"
         >
             <label for="tweet-search-query" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
                 検索キーワード
@@ -45,6 +46,25 @@
                 >
                 <span>ユーザー検索</span>
             </label>
+            <div class="mt-3 {{ $userSearch ? '' : 'hidden' }}" data-tweet-user-select-wrap>
+                <label for="tweet-search-user-id" class="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-200">
+                    検索するユーザー
+                </label>
+                <select
+                    id="tweet-search-user-id"
+                    name="user_id"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                    data-tweet-user-select
+                    data-selected-user-id="{{ $selectedUserId }}"
+                >
+                    <option value="">ユーザーを選択</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}" @selected($selectedUserId === $user->id)>
+                            {{ $user->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="mt-3 flex items-center justify-between gap-3 text-sm text-gray-500 dark:text-gray-400">
                 <span data-tweet-search-count>{{ count($tweets) }}件</span>
                 <span class="hidden text-blue-500 dark:text-blue-300" data-tweet-search-loading>検索中...</span>

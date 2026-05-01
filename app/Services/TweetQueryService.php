@@ -59,11 +59,11 @@ class TweetQueryService
         return $tweets;
     }
 
-    public function searchTweets(string $query, bool $userSearch = false, int $page = 1): LengthAwarePaginator
+    public function searchTweets(string $query, bool $userSearch = false, int $page = 1, ?int $userId = null): LengthAwarePaginator
     {
         $keyword = trim(preg_replace('/\s+/u', ' ', $query) ?? $query);
 
-        if ($keyword === '') {
+        if ((! $userSearch && $keyword === '') || ($userSearch && ! $userId)) {
             $tweets = Tweet::whereRaw('0 = 1')
                 ->paginate(self::TWEETS_PER_PAGE, ['*'], 'page', $page);
 
@@ -78,10 +78,8 @@ class TweetQueryService
             ->when(! $userSearch, function ($tweetQuery) use ($keyword) {
                 $tweetQuery->where('content', 'like', '%'.$keyword.'%');
             })
-            ->when($userSearch, function ($tweetQuery) use ($keyword) {
-                $tweetQuery->whereHas('user', function ($userQuery) use ($keyword) {
-                    $userQuery->where('name', $keyword);
-                });
+            ->when($userSearch && $userId, function ($tweetQuery) use ($userId) {
+                $tweetQuery->where('user_id', $userId);
             })
             ->orderBy('created_at', 'DESC')
             ->orderBy('id', 'DESC')
