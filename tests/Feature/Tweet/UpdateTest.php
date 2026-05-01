@@ -5,6 +5,7 @@ namespace Tests\Feature\Tweet;
 use App\Models\Image;
 use App\Models\Tweet;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -95,6 +96,57 @@ class UpdateTest extends TestCase
 
         $response->assertRedirect($returnUrl)
             ->assertSessionHas('feedback.success', 'つぶやきを編集しました');
+    }
+
+    public function test_published_tweet_cannot_be_changed_to_scheduled_tweet()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'published tweet',
+            'scheduled_at' => null,
+        ]);
+
+        $this->actingAs($user)->get('/tweet/update/' . $tweet->id)
+            ->assertOk()
+            ->assertDontSee('name="scheduled_at"', false);
+
+        $this->actingAs($user)->put('/tweet/update/' . $tweet->id, [
+            'tweet' => 'attempted reschedule',
+            'scheduled_at' => '2026-05-01T12:00',
+        ])->assertRedirect('/tweet?page=1');
+
+        $tweet->refresh();
+        $this->assertSame('attempted reschedule', $tweet->content);
+        $this->assertNull($tweet->scheduled_at);
+    }
+
+    public function test_unpublished_scheduled_tweet_can_update_scheduled_time()
+    {
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $user = User::factory()->create();
+        $tweet = Tweet::factory()->create([
+            'user_id' => $user->id,
+            'content' => 'future tweet',
+            'scheduled_at' => Carbon::parse('2026-05-01 11:00:00'),
+        ]);
+
+        $this->actingAs($user)->get('/tweet/update/' . $tweet->id)
+            ->assertOk()
+            ->assertSee('name="scheduled_at"', false)
+            ->assertSee('value="2026-05-01T11:00"', false);
+
+        $this->actingAs($user)->put('/tweet/update/' . $tweet->id, [
+            'tweet' => 'rescheduled future tweet',
+            'scheduled_at' => '2026-05-01T12:00',
+        ])->assertRedirect('/tweet?page=1');
+
+        $tweet->refresh();
+        $this->assertSame('rescheduled future tweet', $tweet->content);
+        $this->assertSame('2026-05-01 12:00:00', $tweet->scheduled_at->format('Y-m-d H:i:s'));
     }
 
     private function fakePngUpload(string $name): UploadedFile

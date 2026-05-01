@@ -30,13 +30,14 @@ class TweetService
             ->count();
     }
 
-    public function saveTweet(int $userId, string $content, array $images, bool $isSecret = false)
+    public function saveTweet(int $userId, string $content, array $images, bool $isSecret = false, ?Carbon $scheduledAt = null)
     {
-        DB::transaction(function () use ($userId, $content, $images, $isSecret) {
+        DB::transaction(function () use ($userId, $content, $images, $isSecret, $scheduledAt) {
             $tweet = new Tweet;
             $tweet->user_id = $userId;
             $tweet->content = $content;
             $tweet->is_secret = $isSecret;
+            $tweet->scheduled_at = $scheduledAt?->isFuture() ? $scheduledAt : null;
             $tweet->save();
             foreach ($images as $image) {
                 $this->tweetImageService->attachImage($tweet, $image);
@@ -44,12 +45,17 @@ class TweetService
         });
     }
 
-    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = [], bool $isSecret = false): void
+    public function updateTweet(int $tweetId, string $content, array $images = [], array $deleteImageIds = [], bool $isSecret = false, ?Carbon $scheduledAt = null): void
     {
-        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds, $isSecret) {
+        DB::transaction(function () use ($tweetId, $content, $images, $deleteImageIds, $isSecret, $scheduledAt) {
             $tweet = Tweet::with('images')->where('id', $tweetId)->firstOrFail();
             $tweet->content = $content;
             $tweet->is_secret = $isSecret;
+
+            if ($tweet->scheduled_at?->isFuture()) {
+                $tweet->scheduled_at = $scheduledAt?->isFuture() ? $scheduledAt : null;
+            }
+
             $tweet->save();
 
             $tweet->images

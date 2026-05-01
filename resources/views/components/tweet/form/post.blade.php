@@ -3,6 +3,9 @@
 ])
 
 @if(Auth::user() && Auth::user()->hasVerifiedEmail())
+@php
+    $tweetMaxLength = config('tweet.content_max_length');
+@endphp
 <div class="p-4">
     <form action="{{ route('tweet.create') }}" method="post" enctype="multipart/form-data">
         @csrf
@@ -11,11 +14,12 @@
             <textarea
                 name="tweet"
                 rows="3"
+                maxlength="{{ $tweetMaxLength }}"
                 class="focus:ring-blue-400 focus:border-blue-400 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md p-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
-                placeholder="つぶやきを入力"></textarea>
+                placeholder="つぶやきを入力">{{ old('tweet') }}</textarea>
         </div>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            140文字まで
+            {{ $tweetMaxLength }}文字まで
         </p>
         <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <input type="hidden" name="is_secret" value="0">
@@ -33,12 +37,25 @@
                 シークレットモード
             </span>
         </label>
+        <label class="mt-3 block text-sm text-gray-700 dark:text-gray-200">
+            <span class="block mb-1">予約日時</span>
+            <input
+                type="datetime-local"
+                name="scheduled_at"
+                value="{{ old('scheduled_at') }}"
+                min="{{ now()->format('Y-m-d\TH:i') }}"
+                class="focus:ring-blue-400 focus:border-blue-400 block w-full sm:text-sm border border-gray-300 rounded-md p-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            >
+        </label>
         <x-tweet.form.images></x-tweet.form.images>
 
         @error('tweet')
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
         @error('is_secret')
+        <x-alert.error>{{ $message }}</x-alert.error>
+        @enderror
+        @error('scheduled_at')
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">

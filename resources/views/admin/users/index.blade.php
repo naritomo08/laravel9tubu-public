@@ -51,6 +51,26 @@
             <p class="text-sm text-gray-500 mt-2">投稿数と、そのユーザーの投稿に付いたいいね総数を自動更新します。</p>
         </section>
 
+        <section class="mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-3">予約投稿一覧</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-scheduled-tweets-table data-scheduled-tweets-url="{{ route('admin.users.scheduled-tweets', [], false) }}">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">ユーザー</th>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">内容</th>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">予約日時</th>
+                            <th class="py-2 px-4 border-b text-center dark:border-gray-700">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody data-admin-scheduled-tweets-body>
+                        @include('admin.users._scheduled_tweets', ['scheduledTweets' => $scheduledTweets])
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 dark:text-gray-400">予約時刻を過ぎた投稿は自動更新で一覧から外れます。</p>
+        </section>
+
         <section>
             <h3 class="text-xl font-bold text-gray-800 mb-3">ユーザー一覧</h3>
             <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-admin-users-table data-users-url="{{ route('admin.users.list', [], false) }}">
@@ -127,6 +147,37 @@
             };
 
             window.setInterval(refreshStats, 15000);
+        })();
+
+        (() => {
+            const table = document.querySelector('[data-admin-scheduled-tweets-table]');
+            const body = document.querySelector('[data-admin-scheduled-tweets-body]');
+
+            if (!table || !body) {
+                return;
+            }
+
+            const refreshScheduledTweets = async () => {
+                try {
+                    const response = await fetch(table.dataset.scheduledTweetsUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    body.innerHTML = data.html ?? '';
+                } catch (error) {
+                    console.error('Error refreshing admin scheduled tweets:', error);
+                }
+            };
+
+            window.setInterval(refreshScheduledTweets, 15000);
         })();
 
         (() => {

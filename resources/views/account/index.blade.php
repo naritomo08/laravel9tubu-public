@@ -40,6 +40,26 @@
         </div>
 
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="text-xl font-bold mb-4">あなたの予約投稿一覧</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700" data-account-scheduled-tweets-table data-scheduled-tweets-url="{{ route('account.scheduled-tweets', [], false) }}">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">内容</th>
+                            <th class="py-2 px-4 border-b text-left dark:border-gray-700">予約日時</th>
+                            <th class="py-2 px-4 border-b text-center dark:border-gray-700">編集</th>
+                            <th class="py-2 px-4 border-b text-center dark:border-gray-700">削除</th>
+                        </tr>
+                    </thead>
+                    <tbody data-account-scheduled-tweets-body>
+                        @include('account._scheduled_tweets', ['scheduledTweets' => $scheduledTweets])
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 dark:text-gray-400">予約時刻を過ぎた投稿は自動更新で一覧から外れます。</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">プロフィール変更</h3>
 
             <form method="POST" action="{{ route('account.profile.update') }}">
@@ -239,6 +259,37 @@
             };
 
             window.setInterval(refreshStats, 15000);
+        })();
+
+        (() => {
+            const table = document.querySelector('[data-account-scheduled-tweets-table]');
+            const body = document.querySelector('[data-account-scheduled-tweets-body]');
+
+            if (!table || !body) {
+                return;
+            }
+
+            const refreshScheduledTweets = async () => {
+                try {
+                    const response = await fetch(table.dataset.scheduledTweetsUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    body.innerHTML = data.html ?? '';
+                } catch (error) {
+                    console.error('Error refreshing account scheduled tweets:', error);
+                }
+            };
+
+            window.setInterval(refreshScheduledTweets, 15000);
         })();
     </script>
 </x-layout>

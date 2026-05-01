@@ -4,6 +4,7 @@ namespace App\Http\Requests\Tweet;
 
 use App\Models\Tweet;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class UpdateRequest extends FormRequest
 {
@@ -24,8 +25,10 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
+        $tweetMaxLength = config('tweet.content_max_length');
+
         return [
-            'tweet' => 'required|max:140',
+            'tweet' => 'required|max:'.$tweetMaxLength,
             'images' => 'array|max:4',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'delete_image_ids' => 'array',
@@ -33,6 +36,7 @@ class UpdateRequest extends FormRequest
             'page' => 'nullable|integer|min:1',
             'return_url' => 'nullable|string|max:2000',
             'is_secret' => 'nullable|boolean',
+            'scheduled_at' => 'nullable|date',
         ];
     }
 
@@ -79,6 +83,17 @@ class UpdateRequest extends FormRequest
     public function isSecret(): bool
     {
         return $this->boolean('is_secret');
+    }
+
+    public function scheduledAt(): ?Carbon
+    {
+        $scheduledAt = $this->input('scheduled_at');
+
+        if (! $scheduledAt) {
+            return null;
+        }
+
+        return Carbon::parse($scheduledAt);
     }
 
     public function page(): int

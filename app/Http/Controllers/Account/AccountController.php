@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Services\ScheduledTweetService;
 use App\Services\UserDeletionService;
 use App\Services\UserStatsService;
 use Illuminate\Http\Request;
@@ -16,18 +17,29 @@ class AccountController extends Controller
 {
     public function __construct(
         private readonly UserStatsService $userStatsService,
+        private readonly ScheduledTweetService $scheduledTweetService,
     ) {}
 
     public function index()
     {
         return view('account.index', [
             'stats' => $this->userStatsService->buildAccountStatsPayload(Auth::user()),
+            'scheduledTweets' => $this->scheduledTweetService->getUpcomingTweets(Auth::id()),
         ]);
     }
 
     public function stats(Request $request): JsonResponse
     {
         return response()->json($this->userStatsService->buildAccountStatsPayload($request->user()));
+    }
+
+    public function scheduledTweets(Request $request): JsonResponse
+    {
+        return response()->json([
+            'html' => view('account._scheduled_tweets', [
+                'scheduledTweets' => $this->scheduledTweetService->getUpcomingTweets($request->user()->id),
+            ])->render(),
+        ]);
     }
 
     public function updateProfile(Request $request)

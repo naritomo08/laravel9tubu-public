@@ -22,10 +22,16 @@ class CreateController extends Controller
             $request->userId(),
             $request->tweet(),
             $request->images(),
-            $request->isSecret()
+            $request->isSecret(),
+            $request->scheduledAt()
         );
+
+        $message = $request->scheduledAt()
+            ? 'つぶやきを予約しました'
+            : 'つぶやきを投稿しました';
+
        return redirect()
            ->route('tweet.index', ['page' => 1])
-           ->with('feedback.success', "つぶやきを投稿しました");
+           ->with('feedback.success', $message);
     }
 }

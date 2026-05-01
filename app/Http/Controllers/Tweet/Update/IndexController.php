@@ -55,7 +55,7 @@ class IndexController extends Controller
 
         $path = parse_url($returnUrl, PHP_URL_PATH) ?: '';
 
-        if (!str_starts_with($path, '/tweet/search')) {
+        if (!str_starts_with($path, '/tweet/search') && $path !== '/account') {
             return null;
         }
 
