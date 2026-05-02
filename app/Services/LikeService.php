@@ -45,7 +45,9 @@ class LikeService
      */
     public function getLikeCount(int $tweetId): int
     {
-        return Like::where('tweet_id', $tweetId)->count();
+        return Like::where('tweet_id', $tweetId)
+            ->whereHas('user', fn ($query) => $query->notPendingDeletion())
+            ->count();
     }
 
     /**
@@ -74,12 +76,14 @@ class LikeService
 
         $likeCounts = Like::selectRaw('tweet_id, count(*) as like_count')
             ->whereIn('tweet_id', $existingTweetIds)
+            ->whereHas('user', fn ($query) => $query->notPendingDeletion())
             ->groupBy('tweet_id')
             ->pluck('like_count', 'tweet_id');
 
         $likedTweetIds = $userId
             ? Like::where('user_id', $userId)
                 ->whereIn('tweet_id', $existingTweetIds)
+                ->whereHas('user', fn ($query) => $query->notPendingDeletion())
                 ->pluck('tweet_id')
                 ->all()
             : [];
@@ -119,6 +123,7 @@ class LikeService
         }
 
         return Like::where('user_id', $userId)
+            ->whereHas('user', fn ($query) => $query->notPendingDeletion())
             ->where('tweet_id', $tweetId)
             ->exists();
     }

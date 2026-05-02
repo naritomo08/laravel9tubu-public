@@ -57,4 +57,19 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_deletion_requested_user_can_not_authenticate()
+    {
+        $user = User::factory()->create([
+            'deletion_requested_at' => now(),
+        ]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])
+            ->assertSessionHasErrors(['email' => 'このアカウントは削除受付済みです。']);
+
+        $this->assertGuest();
+    }
 }

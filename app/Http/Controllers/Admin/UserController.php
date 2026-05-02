@@ -91,8 +91,10 @@ class UserController extends Controller
         if (auth()->id() === $user->id) {
             return redirect()->route('admin.users.index')->with('error', '自分自身は削除できません');
         }
-        $userDeletionService->delete($user);
+        if (! $userDeletionService->requestDeletion($user)) {
+            return redirect()->route('admin.users.index')->with('success', 'ユーザー削除は受付済みです');
+        }
 
-        return redirect()->route('admin.users.index')->with('success', 'ユーザーを削除しました');
+        return redirect()->route('admin.users.index')->with('success', 'ユーザー削除を受け付けました');
     }
 }

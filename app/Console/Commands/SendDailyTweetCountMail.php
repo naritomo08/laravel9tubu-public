@@ -50,6 +50,7 @@ class SendDailyTweetCountMail extends Command
         $tweetCount = $this->tweetService->countYesterdayTweets();
 
         $users = User::query()
+            ->notPendingDeletion()
             ->whereNotNull('email_verified_at')
             ->where('receives_notification_mail', true)
             ->withCount('tweets')

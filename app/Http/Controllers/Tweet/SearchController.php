@@ -131,6 +131,7 @@ class SearchController extends Controller
             $query->whereNotNull('email_verified_at')
                 ->orWhereColumn('created_at', '<>', 'updated_at');
         })
+            ->notPendingDeletion()
             ->orderBy('name')
             ->orderBy('id')
             ->get(['id', 'name']);

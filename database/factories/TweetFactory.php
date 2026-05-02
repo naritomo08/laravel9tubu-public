@@ -19,10 +19,22 @@ class TweetFactory extends Factory
     {
         return [
             'user_id' => 1, // つぶやきを投稿したユーザーのIDをデフォルトで1とする
-            'content' => $this->faker->realText(100),
+            'content' => $this->contentAtMaxLength(),
             'is_secret' => false,
             'scheduled_at' => null,
             'created_at' => Carbon::now()->yesterday()
         ];
+    }
+
+    private function contentAtMaxLength(): string
+    {
+        $maxLength = max(1, (int) config('tweet.content_max_length', 140));
+        $content = '';
+
+        while (mb_strlen($content) < $maxLength) {
+            $content .= $this->faker->realText(max(10, $maxLength));
+        }
+
+        return mb_substr($content, 0, $maxLength);
     }
 }

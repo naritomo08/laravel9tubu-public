@@ -3,28 +3,23 @@
 namespace Database\Seeders;
 
 use App\Models\Image;
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Tweet;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
-class TweetsSeeder extends Seeder
+class TestUserTweetsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        $this->call(UsersSeeder::class);
+        $this->call(TestUserSeeder::class);
 
-        $admin = User::where('is_seed_admin', true)->firstOrFail();
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $missingTweetCount = max(0, 60 - $user->tweets()->where('is_seeded', true)->count());
 
         Tweet::factory()
-            ->count(60)
+            ->count($missingTweetCount)
             ->create([
-                'user_id' => $admin->id,
+                'user_id' => $user->id,
                 'is_seeded' => true,
             ])
             ->each(fn (Tweet $tweet) => Image::factory()

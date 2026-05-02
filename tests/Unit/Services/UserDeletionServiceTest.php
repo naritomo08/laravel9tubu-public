@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\Image;
+use App\Jobs\DeleteUserJob;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Services\TweetImageService;
 use App\Services\TweetService;
 use App\Services\UserDeletionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -53,5 +55,21 @@ class UserDeletionServiceTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $otherUser->id]);
         $this->assertDatabaseHas('tweets', ['id' => $otherTweet->id]);
         $this->assertFalse(Storage::disk('public')->exists('images/'.$image->name));
+    }
+
+    public function test_request_deletion_marks_user_and_dispatches_job_once(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+
+        $service = new UserDeletionService(new TweetService(new TweetImageService));
+
+        $this->assertTrue($service->requestDeletion($user));
+        $this->assertFalse($service->requestDeletion($user->refresh()));
+
+        $this->assertNotNull($user->refresh()->deletion_requested_at);
+        Queue::assertPushed(DeleteUserJob::class, 1);
+        Queue::assertPushed(DeleteUserJob::class, fn (DeleteUserJob $job) => $job->userId === $user->id);
     }
 }

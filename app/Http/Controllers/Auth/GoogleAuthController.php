@@ -105,6 +105,7 @@ class GoogleAuthController extends Controller
         }
 
         $existingLinkedUser = User::query()
+            ->notPendingDeletion()
             ->where('google_id', $googleUser['sub'])
             ->where('id', '!=', $user->id)
             ->first();
@@ -130,11 +131,13 @@ class GoogleAuthController extends Controller
     private function handleLogin(Request $request, array $googleUser): RedirectResponse
     {
         $user = User::query()
+            ->notPendingDeletion()
             ->where('google_id', $googleUser['sub'])
             ->first();
 
         if (! $user && isset($googleUser['email'])) {
             $matchedEmailUser = User::query()
+                ->notPendingDeletion()
                 ->where('email', $googleUser['email'])
                 ->first();
 
