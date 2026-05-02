@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'google_email',
         'google_avatar',
         'google_connected_at',
+        'deletion_requested_at',
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_admin' => 'boolean',
         'is_seed_admin' => 'boolean',
         'google_connected_at' => 'datetime',
+        'deletion_requested_at' => 'datetime',
     ];
 
     public function tweets()
@@ -61,6 +63,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function likes()
     {
         return $this->hasMany(Like::class);
+    }
+
+    public function scopeNotPendingDeletion($query)
+    {
+        return $query->whereNull('deletion_requested_at');
+    }
+
+    public function isDeletionRequested(): bool
+    {
+        return $this->deletion_requested_at !== null;
     }
 
     public function isPendingInitialEmailVerification(): bool

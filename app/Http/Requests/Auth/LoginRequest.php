@@ -53,6 +53,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($this->user()?->isDeletionRequested()) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'このアカウントは削除受付済みです。',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

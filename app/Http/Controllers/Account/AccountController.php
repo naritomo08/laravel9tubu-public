@@ -134,13 +134,14 @@ class AccountController extends Controller
             ]);
         }
 
-        Auth::guard('web')->logout();
+        $userDeletionService->requestDeletion($user);
 
-        $userDeletionService->delete($user);
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/tweet');
+        return redirect('/tweet')
+            ->with('feedback.success', 'アカウント削除を受け付けました。処理が完了するまでしばらくお待ちください。');
     }
 }

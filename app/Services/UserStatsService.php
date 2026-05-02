@@ -12,12 +12,15 @@ class UserStatsService
     public function getUsersWithStats(): Collection
     {
         return User::query()
+            ->notPendingDeletion()
             ->withCount('tweets')
             ->addSelect([
                 'received_likes_count' => Like::query()
                     ->selectRaw('count(*)')
                     ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
-                    ->whereColumn('tweets.user_id', 'users.id'),
+                    ->join('users as liked_by_users', 'likes.user_id', '=', 'liked_by_users.id')
+                    ->whereColumn('tweets.user_id', 'users.id')
+                    ->whereNull('liked_by_users.deletion_requested_at'),
             ])
             ->orderBy('id')
             ->get();
@@ -28,8 +31,13 @@ class UserStatsService
         return [
             'totals' => [
                 'label' => 'トータル',
-                'tweet_count' => Tweet::count(),
-                'like_count' => Like::count(),
+                'tweet_count' => Tweet::query()
+                    ->whereHas('user', fn ($query) => $query->notPendingDeletion())
+                    ->count(),
+                'like_count' => Like::query()
+                    ->whereHas('user', fn ($query) => $query->notPendingDeletion())
+                    ->whereHas('tweet.user', fn ($query) => $query->notPendingDeletion())
+                    ->count(),
             ],
             'users' => $users->map(function (User $user): array {
                 return [
@@ -49,7 +57,9 @@ class UserStatsService
             'tweet_count' => $user->tweets()->count(),
             'like_count' => Like::query()
                 ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
+                ->join('users as liked_by_users', 'likes.user_id', '=', 'liked_by_users.id')
                 ->where('tweets.user_id', $user->id)
+                ->whereNull('liked_by_users.deletion_requested_at')
                 ->count(),
         ];
     }

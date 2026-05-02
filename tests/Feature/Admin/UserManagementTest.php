@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Jobs\DeleteUserJob;
 use Database\Seeders\UsersSeeder;
 use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -18,11 +20,16 @@ class UserManagementTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $user = User::factory()->create(['email' => 'old@example.com']);
+        User::factory()->create([
+            'email' => 'pending@example.com',
+            'deletion_requested_at' => now(),
+        ]);
 
         $response = $this->actingAs($admin)
             ->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('old@example.com');
+            ->assertSee('old@example.com')
+            ->assertDontSee('pending@example.com');
 
         $this->assertStringNotContainsString('name="email"', $response->getContent());
         $this->assertStringNotContainsString('/admin/users/'.$user->id.'/email', $response->getContent());
@@ -458,6 +465,24 @@ class UserManagementTest extends TestCase
             ->assertSessionHas('error', '管理者は削除できません');
 
         $this->assertDatabaseHas('users', ['id' => $targetAdmin->id]);
+    }
+
+    public function test_admin_can_request_non_admin_user_deletion()
+    {
+        Queue::fake();
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $user = User::factory()->create(['is_admin' => false]);
+        Tweet::factory()->create(['user_id' => $user->id]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $user))
+            ->assertRedirect(route('admin.users.index'))
+            ->assertSessionHas('success', 'ユーザー削除を受け付けました');
+
+        $this->assertNotNull($user->refresh()->deletion_requested_at);
+        $this->assertDatabaseHas('tweets', ['user_id' => $user->id]);
+        Queue::assertPushed(DeleteUserJob::class, fn (DeleteUserJob $job) => $job->userId === $user->id);
     }
 
     public function test_non_admin_can_not_fetch_stats_json()

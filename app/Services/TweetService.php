@@ -27,6 +27,7 @@ class TweetService
     {
         return Tweet::whereDate('created_at', '>=', Carbon::yesterday()->toDateTimeString())
             ->whereDate('created_at', '<', Carbon::today()->toDateTimeString())
+            ->whereHas('user', fn ($query) => $query->notPendingDeletion())
             ->count();
     }
 

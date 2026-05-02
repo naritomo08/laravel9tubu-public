@@ -33,13 +33,26 @@ class Tweet extends Model
         return $this->hasMany(Like::class);
     }
 
+    public function activeLikes()
+    {
+        return $this->hasMany(Like::class)
+            ->whereHas('user', fn (Builder $query) => $query->notPendingDeletion());
+    }
+
     public function likeCount(): int
     {
-        return $this->likes()->count();
+        return $this->activeLikes()->count();
     }
 
     public function scopeVisibleTo(Builder $query, ?User $user): Builder
     {
+        $query->whereNotIn(
+            'user_id',
+            User::query()
+                ->whereNotNull('deletion_requested_at')
+                ->select('id')
+        );
+
         $query->where(function (Builder $query) {
             $query->whereNull('scheduled_at')
                 ->orWhere('scheduled_at', '<=', now());

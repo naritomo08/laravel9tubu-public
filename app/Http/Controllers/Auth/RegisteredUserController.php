@@ -52,6 +52,7 @@ class RegisteredUserController extends Controller
         Auth::login($newUser);
 
         $allUser = User::query()
+            ->notPendingDeletion()
             ->whereNotNull('email_verified_at')
             ->where('receives_notification_mail', true)
             ->get();

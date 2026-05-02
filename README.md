@@ -198,7 +198,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(134テスト)
+#### php artisan test で実行されるテスト(137テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -236,11 +236,11 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Unit/Services/TweetImageServiceTest.php` | つぶやき画像の保存・紐付けと、画像削除時のファイル・中間テーブル・画像レコード削除を検証。 |
 | `tests/Unit/Services/TweetQueryServiceTest.php` | つぶやき一覧取得時のいいね状態・件数の一括付与を検証。 |
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` の自分の投稿判定を検証。 |
-| `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ることを検証。 |
+| `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ること、削除受付時に削除予定フラグを立てて削除Jobを一度だけ投入することを検証。 |
 | `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
-| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会処理を検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得・削除、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
-| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードでログイン失敗を検証。 |
+| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会時に削除受付フラグを立てて削除Jobを投入しログアウトすることを検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得・削除、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
+| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
 | `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
@@ -340,7 +340,51 @@ docker-compose exec app /bin/bash
 php artisan db:seed --class=TweetsSeeder
 ```
 
-先ほど出したUsersSeederと同時に全消しして入れる場合
+## 一般ユーザーをテスト的に入れたい場合
+
+以下のファイルで一般ユーザーを追加できます。
+
+作成されるユーザー：
+
+```bash
+ユーザ：test@example.com
+パスワード：password
+ユーザー名：test-user
+```
+
+設定ファイル：
+
+```bash
+database/seeders/TestUserSeeder.php
+```
+
+適用：
+
+```bash
+docker-compose exec app /bin/bash
+php artisan db:seed --class=TestUserSeeder
+```
+
+## 一般ユーザーに60件のつぶやきを入れたい場合
+
+以下のファイルで `test-user` に60件の画像リンク付き書き込みを追加できます。
+`test-user` が存在しない場合は、先に一般ユーザーも作成されます。
+既に `test-user` のSeeder作成つぶやきがある場合は、不足分だけ追加されます。
+
+設定ファイル：
+
+```bash
+database/seeders/TestUserTweetsSeeder.php
+```
+
+適用：
+
+```bash
+docker-compose exec app /bin/bash
+php artisan db:seed --class=TestUserTweetsSeeder
+```
+
+全消しして管理者、一般ユーザー、つぶやきを入れる場合
 
 ```bash
 docker-compose exec app /bin/bash

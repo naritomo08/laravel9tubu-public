@@ -6,10 +6,12 @@ use App\Models\Like;
 use App\Models\Tweet;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Jobs\DeleteUserJob;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -133,6 +135,8 @@ class AccountTest extends TestCase
 
     public function test_user_can_delete_own_account_and_is_logged_out()
     {
+        Queue::fake();
+
         $user = User::factory()->create();
         Tweet::factory()->create(['user_id' => $user->id]);
 
@@ -140,11 +144,13 @@ class AccountTest extends TestCase
             ->delete('/account', [
                 'current_password' => 'password',
             ])
-            ->assertRedirect('/tweet');
+            ->assertRedirect('/tweet')
+            ->assertSessionHas('feedback.success', 'アカウント削除を受け付けました。処理が完了するまでしばらくお待ちください。');
 
         $this->assertGuest();
-        $this->assertDatabaseMissing('users', ['id' => $user->id]);
-        $this->assertDatabaseMissing('tweets', ['user_id' => $user->id]);
+        $this->assertNotNull($user->refresh()->deletion_requested_at);
+        $this->assertDatabaseHas('tweets', ['user_id' => $user->id]);
+        Queue::assertPushed(DeleteUserJob::class, fn (DeleteUserJob $job) => $job->userId === $user->id);
     }
 
     public function test_admin_account_screen_does_not_have_delete_section()
