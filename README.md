@@ -404,18 +404,14 @@ php artisan db:seed --class=UsersSeeder
 
 ## つぶやき数通知メール時間変更
 
+`backend/.env` の `DAILY_TWEET_COUNT_MAIL_TIME` を変更する。
+時刻は `HH:MM` 形式で指定する。
+
+```env
+DAILY_TWEET_COUNT_MAIL_TIME=07:00
+```
+
 ```bash
-vi backend/app/Console/Kernel.php
-
-以下の行の時刻部分を書き換える。
-
-    protected function schedule(Schedule $schedule)
-    {
-        $schedule->command('mail:send-daily-tweet-count-mail')
-            ->dailyAt('7:00');
-        $schedule->command('users:delete-unverified')->everyMinute();
-    }
-
 適用：
 
 docker-compose build && docker-compose up -d
@@ -423,7 +419,7 @@ docker-compose build && docker-compose up -d
 
 >この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
 >`queue` コンテナが `php artisan queue:work` を常駐実行します。
->そのため、`Kernel.php` に登録したスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
+>そのため、`backend/.env` の時刻に合わせたスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
 
 ## npm依存の脆弱性対応
 
