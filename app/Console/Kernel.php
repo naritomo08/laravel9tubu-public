@@ -16,7 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('mail:send-daily-tweet-count-mail')
-            ->dailyAt('7:00');
+            ->dailyAt(config('tweet.daily_tweet_count_mail_time'));
         $schedule->command('users:delete-unverified')->everyMinute();
     }
 
