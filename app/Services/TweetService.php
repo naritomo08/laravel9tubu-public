@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Tweet;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +39,9 @@ class TweetService
             $tweet->user_id = $userId;
             $tweet->content = $content;
             $tweet->is_secret = $isSecret;
+            $tweet->is_seeded = User::whereKey($userId)
+                ->where('is_seed_admin', true)
+                ->exists();
             $tweet->scheduled_at = $scheduledAt?->isFuture() ? $scheduledAt : null;
             $tweet->save();
             foreach ($images as $image) {
