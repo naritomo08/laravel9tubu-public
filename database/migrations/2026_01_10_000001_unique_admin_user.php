@@ -11,6 +11,12 @@ return new class extends Migration
     public function up(): void
     {
         // is_admin=1のユーザーが1人だけになるようユニーク制約を追加
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE UNIQUE INDEX unique_admin ON users (is_admin) WHERE is_admin = true');
+
+            return;
+        }
+
         DB::statement('CREATE UNIQUE INDEX unique_admin ON users ((CASE WHEN is_admin = 1 THEN 1 ELSE NULL END))');
     }
 
@@ -19,6 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('DROP INDEX unique_admin ON users');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('DROP INDEX unique_admin ON users');
+
+            return;
+        }
+
+        DB::statement('DROP INDEX IF EXISTS unique_admin');
     }
 };

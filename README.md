@@ -50,7 +50,7 @@ chmod u+x build_env.sh && ./build_env.sh
 PHPコンテナログイン
 docker-compose exec app /bin/bash
 
-Laracvelキャッシュクリア
+Laravelキャッシュクリア
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
@@ -74,7 +74,7 @@ http://127.0.0.1:8080/tweet
 
 ### 利用規約・プライバシーポリシー・お問い合わせ
 
-利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換されます。
+利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換し、変換後のHTMLをキャッシュします。
 
 | 表示ページ | Markdownファイル |
 | --- | --- |
@@ -87,10 +87,10 @@ http://127.0.0.1:8080/tweet
 
 本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。
 
-編集後に表示が更新されない場合は、PHPコンテナ内で以下を実行してビューキャッシュを削除してください。
+編集後に表示が更新されない場合は、PHPコンテナ内で以下を実行してアプリケーションキャッシュを削除してください。
 
 ```bash
-php artisan view:clear
+php artisan cache:clear
 ```
 
 ### adminer(DB管理ツール)
@@ -167,6 +167,14 @@ docker-compose logs -f scheduler
 docker-compose logs -f queue
 ```
 
+キューはRedisに保管されます。設定変更後に反映されない場合は、関連コンテナを再作成して設定キャッシュを削除してください。
+
+```bash
+docker-compose up -d app scheduler queue
+docker-compose exec app php artisan config:clear
+docker-compose exec queue php artisan queue:restart
+```
+
 手動で1回だけスケジューラ評価を走らせたい場合:
 
 ```bash
@@ -198,7 +206,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(139テスト)
+#### php artisan test で実行されるテスト(140テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -251,7 +259,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーや通知無効ユーザーへ送信されないことを検証。 |
 | `tests/Feature/ContactTest.php` | 問い合わせ画面のログイン必須、ログイン済みユーザー情報の固定表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
-| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示と、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
+| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示、法務文書HTMLキャッシュ利用、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
 | `tests/Feature/Tweet/ContentLengthTest.php` | つぶやき作成・編集で設定値に基づく最大文字数バリデーションが効くこと、投稿フォーム・編集フォームに最大文字数表示と動的カウント用の設定が出力されることを検証。 |
 | `tests/Feature/Tweet/CreateTest.php` | Seeder固定管理者が作成したつぶやきはSeeder作成扱いになり、通常管理者が作成したつぶやきはSeeder作成扱いにならないことを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
@@ -371,7 +379,6 @@ php artisan db:seed --class=TestUserSeeder
 
 以下のファイルで `test-user` に60件の画像リンク付き書き込みを追加できます。
 `test-user` が存在しない場合は、先に一般ユーザーも作成されます。
-既に `test-user` のSeeder作成つぶやきがある場合は、不足分だけ追加されます。
 
 設定ファイル：
 
@@ -390,6 +397,7 @@ php artisan db:seed --class=TestUserTweetsSeeder
 
 ```bash
 docker-compose exec app /bin/bash
+rm -rf storage/app/public/images/*
 php artisan migrate:fresh
 php artisan db:seed
 ```
@@ -406,8 +414,9 @@ php artisan db:seed --class=UsersSeeder
 
 ## つぶやき数通知メール時間変更
 
-`backend/.env` の `DAILY_TWEET_COUNT_MAIL_TIME` を変更する。
-時刻は `HH:MM` 形式で指定する。
+`backend/.env` の `TWEET_CONTENT_MAX_LENGTH` を変更する。
+文字数は `200` 形式で指定する。
+DB側が250文字までとしているため、それ以内で設定する。
 
 ```env
 DAILY_TWEET_COUNT_MAIL_TIME=07:00
@@ -419,9 +428,20 @@ DAILY_TWEET_COUNT_MAIL_TIME=07:00
 docker-compose build && docker-compose up -d
 ```
 
->この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
->`queue` コンテナが `php artisan queue:work` を常駐実行します。
->そのため、`backend/.env` の時刻に合わせたスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
+## つぶやき文字数の変更
+
+`backend/.env` の `TWEET_CONTENT_MAX_LENGTH` を変更する。
+時刻は `200` 形式で指定する。
+
+```env
+TWEET_CONTENT_MAX_LENGTH=200
+```
+
+```bash
+適用：
+
+docker-compose build && docker-compose up -d
+```
 
 ## npm依存の脆弱性対応
 

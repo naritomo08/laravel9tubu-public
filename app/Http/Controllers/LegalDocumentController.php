@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class LegalDocumentController extends Controller
 {
+    private const CACHE_TTL_SECONDS = 2592000;
+
     private const DOCUMENTS = [
         'terms' => [
             'title' => '利用規約',
@@ -40,10 +43,17 @@ class LegalDocumentController extends Controller
 
         return view('legal.show', [
             'title' => $config['title'],
-            'content' => new HtmlString(Str::markdown(file_get_contents($path), [
+            'content' => new HtmlString($this->renderMarkdown($document, $path)),
+        ]);
+    }
+
+    private function renderMarkdown(string $document, string $path): string
+    {
+        return Cache::remember("legal_document:{$document}", self::CACHE_TTL_SECONDS, function () use ($path) {
+            return Str::markdown(file_get_contents($path), [
                 'html_input' => 'strip',
                 'allow_unsafe_links' => false,
-            ])),
-        ]);
+            ]);
+        });
     }
 }

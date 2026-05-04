@@ -6,30 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('email')->unique();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_seed_admin')->default(false);
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('receives_notification_mail')->default(true);
             $table->string('password');
+            $table->string('google_id')->nullable()->unique();
+            $table->string('google_email')->nullable();
+            $table->text('google_avatar')->nullable();
+            $table->timestamp('google_connected_at')->nullable();
             $table->rememberToken();
+            $table->timestamp('deletion_requested_at')->nullable()->index();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('users');
     }
