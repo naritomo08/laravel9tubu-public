@@ -2,8 +2,10 @@
     <template x-for="(field, i) in fields" :key="i">
         <div class="w-full flex my-2">
             <label :for="field.id" class="border border-gray-300 rounded-md p-2 w-full bg-white cursor-pointer dark:border-gray-700 dark:bg-gray-900">
-                <input type="file" accept="image/*" class="sr-only" :id="field.id" name="images[]" @change="fields[i].file = $event.target.files[0]">
+                <input type="file" accept="image/*" class="sr-only" :id="field.id" name="images[]" @change="handleFileChange($event, i)">
                 <span x-text="field.file ? field.file.name : '画像を選択'" class="text-gray-700 dark:text-gray-200"></span>
+                <span x-show="field.processing" class="ml-2 text-sm text-gray-500 dark:text-gray-400">圧縮中...</span>
+                <span x-show="field.compressed" class="ml-2 text-sm text-green-600 dark:text-green-400">圧縮済み</span>
             </label>
             <button type="reset" @click="removeField(i)" class="p-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 20 20" fill="currentColor">
@@ -25,16 +27,128 @@
 <script>
 function inputFormHandler() {
   return {
+    maxImageSize: 200 * 1024,
+    targetImageSize: 190 * 1024,
+    pendingCompressions: 0,
+    shouldSubmitWhenReady: false,
+    init() {
+      this.$nextTick(() => {
+        const form = this.$el.closest('form');
+
+        form?.addEventListener('submit', (event) => {
+          if (this.pendingCompressions === 0) {
+            return;
+          }
+
+          event.preventDefault();
+          this.shouldSubmitWhenReady = true;
+        });
+      });
+    },
     fields: [],
     addField() {
       const i = this.fields.length;
       this.fields.push({
         file: '',
-        id: `input-image-${i}`
+        id: `input-image-${i}`,
+        processing: false,
+        compressed: false
       });
     },
     removeField(index) {
       this.fields.splice(index, 1);
+    },
+    async handleFileChange(event, index) {
+      const file = event.target.files[0] || '';
+      const field = this.fields[index];
+
+      field.file = file;
+      field.processing = false;
+      field.compressed = false;
+
+      if (!file || file.size <= this.maxImageSize || !file.type.startsWith('image/')) {
+        return;
+      }
+
+      field.processing = true;
+      this.pendingCompressions += 1;
+
+      try {
+        const compressedFile = await this.compressImage(file);
+        const dataTransfer = new DataTransfer();
+
+        dataTransfer.items.add(compressedFile);
+        event.target.files = dataTransfer.files;
+        field.file = compressedFile;
+        field.compressed = compressedFile.size < file.size;
+      } catch (error) {
+        console.error('Image compression failed:', error);
+      } finally {
+        field.processing = false;
+        this.pendingCompressions = Math.max(0, this.pendingCompressions - 1);
+
+        if (this.pendingCompressions === 0 && this.shouldSubmitWhenReady) {
+          this.shouldSubmitWhenReady = false;
+          this.$el.closest('form')?.requestSubmit();
+        }
+      }
+    },
+    async compressImage(file) {
+      const image = await this.loadImage(file);
+      let width = image.naturalWidth || image.width;
+      let height = image.naturalHeight || image.height;
+      let blob = await this.compressImageAtSize(image, width, height);
+
+      while (blob.size > this.targetImageSize && Math.max(width, height) > 320) {
+        width = Math.round(width * 0.85);
+        height = Math.round(height * 0.85);
+        blob = await this.compressImageAtSize(image, width, height);
+      }
+
+      URL.revokeObjectURL(image.src);
+
+      return new File([blob], this.compressedFileName(file.name), {
+        type: blob.type,
+        lastModified: Date.now()
+      });
+    },
+    async compressImageAtSize(image, width, height) {
+      let quality = 0.86;
+      let blob = await this.canvasToBlob(image, width, height, quality);
+
+      while (blob.size > this.targetImageSize && quality > 0.42) {
+        quality -= 0.08;
+        blob = await this.canvasToBlob(image, width, height, quality);
+      }
+
+      return blob;
+    },
+    loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = URL.createObjectURL(file);
+      });
+    },
+    canvasToBlob(image, width, height, quality) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => blob ? resolve(blob) : reject(new Error('Canvas conversion failed.')),
+          'image/jpeg',
+          quality
+        );
+      });
+    },
+    compressedFileName(fileName) {
+      return fileName.replace(/\.[^.]+$/, '') + '.jpg';
     }
   }
 }
