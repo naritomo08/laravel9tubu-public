@@ -13,14 +13,7 @@
         <!-- Fonts -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
 
-        <script>
-            (() => {
-                try {
-                    const theme = localStorage.getItem('theme') || 'light';
-                    document.documentElement.classList.toggle('dark', theme === 'dark');
-                } catch (error) {}
-            })();
-        </script>
+        <x-theme-preload />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>

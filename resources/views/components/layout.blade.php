@@ -9,14 +9,7 @@
     <meta name="auth-session-started" content="{{ Auth::check() ? 'true' : 'false' }}">
     <meta name="auth-session-timeout-minutes" content="{{ config('session.lifetime') }}">
     <meta name="auth-logout-url" content="{{ route('logout', [], false) }}">
-    <script>
-        (() => {
-            try {
-                const theme = localStorage.getItem('theme') || 'light';
-                document.documentElement.classList.toggle('dark', theme === 'dark');
-            } catch (error) {}
-        })();
-    </script>
+    <x-theme-preload />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <title>{{ $title ?? config('app.name', 'Laravel') }}</title>
     @stack('css')

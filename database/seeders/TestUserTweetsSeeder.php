@@ -14,10 +14,9 @@ class TestUserTweetsSeeder extends Seeder
         $this->call(TestUserSeeder::class);
 
         $user = User::where('email', 'test@example.com')->firstOrFail();
-        $missingTweetCount = max(0, 60 - $user->tweets()->where('is_seeded', true)->count());
 
         Tweet::factory()
-            ->count($missingTweetCount)
+            ->count(60)
             ->create([
                 'user_id' => $user->id,
                 'is_seeded' => true,

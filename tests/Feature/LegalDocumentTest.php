@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class LegalDocumentTest extends TestCase
@@ -11,6 +12,15 @@ class LegalDocumentTest extends TestCase
         $this->get('/terms')
             ->assertOk()
             ->assertSee('利用規約');
+    }
+
+    public function test_terms_page_uses_cached_markdown_content()
+    {
+        Cache::put('legal_document:terms', '<p>Cached legal terms content</p>');
+
+        $this->get('/terms')
+            ->assertOk()
+            ->assertSee('Cached legal terms content');
     }
 
     public function test_privacy_page_renders_markdown_content()
