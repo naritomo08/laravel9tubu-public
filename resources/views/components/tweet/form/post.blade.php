@@ -49,9 +49,8 @@
         <x-alert.error>{{ $message }}</x-alert.error>
         @enderror
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            4枚までで、トータル1MB
+            4枚まで
         </p>
-
         <div class="flex flex-wrap justify-end">
             <x-element.button data-tweet-submit>
                 つぶやく
