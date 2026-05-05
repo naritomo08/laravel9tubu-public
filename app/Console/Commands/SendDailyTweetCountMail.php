@@ -11,6 +11,8 @@ use Illuminate\Contracts\Mail\Mailer;
 
 class SendDailyTweetCountMail extends Command
 {
+    private const CHUNK_SIZE = 100;
+
     /**
      * The name and signature of the console command.
      *
@@ -49,7 +51,7 @@ class SendDailyTweetCountMail extends Command
     {
         $tweetCount = $this->tweetService->countYesterdayTweets();
 
-        $users = User::query()
+        User::query()
             ->notPendingDeletion()
             ->whereNotNull('email_verified_at')
             ->where('receives_notification_mail', true)
@@ -60,17 +62,17 @@ class SendDailyTweetCountMail extends Command
                     ->join('tweets', 'likes.tweet_id', '=', 'tweets.id')
                     ->whereColumn('tweets.user_id', 'users.id'),
             ])
-            ->get();
-
-        foreach ($users as $user) {
-            $this->mailer->to($user->email)
-                ->send(new DailyTweetCount(
-                    $user,
-                    $tweetCount,
-                    (int) $user->tweets_count,
-                    (int) ($user->received_likes_count ?? 0)
-                ));
-        }
+            ->chunkById(self::CHUNK_SIZE, function ($users) use ($tweetCount): void {
+                foreach ($users as $user) {
+                    $this->mailer->to($user->email)
+                        ->send(new DailyTweetCount(
+                            $user,
+                            $tweetCount,
+                            (int) $user->tweets_count,
+                            (int) ($user->received_likes_count ?? 0)
+                        ));
+                }
+            });
 
         return 0;
     }
