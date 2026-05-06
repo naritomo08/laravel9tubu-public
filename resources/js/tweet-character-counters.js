@@ -52,7 +52,8 @@ export const setupTweetCharacterCounters = () => {
             textarea.setAttribute('aria-invalid', remainingCount < 0 ? 'true' : 'false');
 
             if (submit) {
-                submit.disabled = isInvalid;
+                submit.dataset.tweetTextInvalid = isInvalid ? 'true' : 'false';
+                window.updateTweetSubmitState?.(submit);
             }
 
             renderHighlight(textarea.value);
