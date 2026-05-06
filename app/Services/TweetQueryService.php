@@ -14,7 +14,7 @@ class TweetQueryService
     public function getTweets(int $page = 1): LengthAwarePaginator
     {
         $tweets = Tweet::with(['user', 'images'])
-            ->withCount('likes')
+            ->withCount(['activeLikes as likes_count'])
             ->visibleTo(Auth::user())
             ->orderByRaw('COALESCE(scheduled_at, created_at) DESC')
             ->orderBy('id', 'DESC')
@@ -27,7 +27,7 @@ class TweetQueryService
     public function getTweetsNewerThan(int $tweetId)
     {
         $tweets = Tweet::with(['user', 'images'])
-            ->withCount('likes')
+            ->withCount(['activeLikes as likes_count'])
             ->visibleTo(Auth::user())
             ->where('id', '>', $tweetId)
             ->orderBy('id', 'DESC')
@@ -45,7 +45,7 @@ class TweetQueryService
         }
 
         $tweets = Tweet::with(['user', 'images'])
-            ->withCount('likes')
+            ->withCount(['activeLikes as likes_count'])
             ->visibleTo(Auth::user())
             ->whereIn('id', array_keys($tweetVersions))
             ->get()
@@ -73,7 +73,7 @@ class TweetQueryService
         }
 
         $tweets = Tweet::with(['user', 'images'])
-            ->withCount('likes')
+            ->withCount(['activeLikes as likes_count'])
             ->visibleTo(Auth::user())
             ->when(! $userSearch, function ($tweetQuery) use ($keyword) {
                 $tweetQuery->where('content', 'like', '%'.$keyword.'%');

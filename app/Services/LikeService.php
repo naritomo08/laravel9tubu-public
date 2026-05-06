@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Like;
 use App\Models\Tweet;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LikeService
 {
@@ -18,23 +19,30 @@ class LikeService
     public function toggleLike(int $tweetId): bool
     {
         $userId = Auth::id();
-        
-        $existingLike = Like::where('user_id', $userId)
-            ->where('tweet_id', $tweetId)
-            ->first();
 
-        if ($existingLike) {
-            // いいねを解除
-            $existingLike->delete();
-            return false;
-        } else {
-            // いいねを付ける
-            $like = new Like();
-            $like->user_id = $userId;
-            $like->tweet_id = $tweetId;
-            $like->save();
+        return DB::transaction(function () use ($tweetId, $userId) {
+            Tweet::whereKey($tweetId)->lockForUpdate()->first();
+
+            $existingLike = Like::where('user_id', $userId)
+                ->where('tweet_id', $tweetId)
+                ->first();
+
+            if ($existingLike) {
+                // いいねを解除
+                $existingLike->delete();
+                return false;
+            }
+
+            // いいねを付ける。競合で先に作成済みになっていても正常系として扱う。
+            Like::insertOrIgnore([
+                'user_id' => $userId,
+                'tweet_id' => $tweetId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
             return true;
-        }
+        });
     }
 
     /**
