@@ -17,7 +17,9 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::get('/tweet', \App\Http\Controllers\Tweet\IndexController::class)->name('tweet.index');
-Route::get('/tweet/latest', \App\Http\Controllers\Tweet\LatestController::class)->name('tweet.latest');
+Route::get('/tweet/latest', \App\Http\Controllers\Tweet\LatestController::class)
+    ->middleware('throttle:60,1')
+    ->name('tweet.latest');
 Route::get('/like/status', \App\Http\Controllers\Like\StatusController::class)->name('like.status');
 Route::middleware('auth')->get('/account/admin-status', function () {
     return response()->json([

@@ -5,6 +5,7 @@ namespace Tests\Feature\Tweet;
 use App\Models\Image;
 use App\Models\Tweet;
 use App\Models\User;
+use App\Services\TweetQueryService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -35,6 +36,28 @@ class LatestTest extends TestCase
 
         $this->assertStringContainsString('new tweet', $html);
         $this->assertStringNotContainsString('old tweet', $html);
+    }
+
+    public function test_latest_limits_returned_tweets_when_after_id_is_zero()
+    {
+        $user = User::factory()->create();
+
+        for ($i = 1; $i <= TweetQueryService::LATEST_TWEETS_LIMIT + 1; $i++) {
+            Tweet::factory()->create([
+                'user_id' => $user->id,
+                'content' => sprintf('limited tweet %03d', $i),
+            ]);
+        }
+
+        $response = $this->getJson('/tweet/latest?after_id=0');
+
+        $html = (string) $response->json('html');
+
+        $response->assertOk();
+
+        $this->assertSame(TweetQueryService::LATEST_TWEETS_LIMIT, substr_count($html, 'data-tweet-id='));
+        $this->assertStringContainsString(sprintf('limited tweet %03d', TweetQueryService::LATEST_TWEETS_LIMIT + 1), $html);
+        $this->assertStringNotContainsString('limited tweet 001', $html);
     }
 
     public function test_latest_returns_updated_tweet_when_user_name_changed()
