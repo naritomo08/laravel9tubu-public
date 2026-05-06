@@ -29,39 +29,12 @@ mac+DockerCompose+vscode+gitでの環境を構築してること。
 ### ベースリポジトリをクローンする
 
 ```bash
-git clone -b php8.2 https://github.com/naritomo08/laravel_docker.git laraveldocker
+git clone -b tubuyaki https://github.com/naritomo08/laravel_docker.git laraveldocker
 cd laraveldocker
 rm -rf .git
-git clone https://github.com/naritomo08/laravel9tubu-public.git backend
+git clone -b v20260110 https://github.com/naritomo08/laravel9tubu-public.git backend
 cd backend
 rm -rf .git
-```
-
-最後の.git削除コマンドについて、
-別途devlopブランチに元のLaravel9から以下の
-対応をしたソースを置いています。
-
-* Laravel MIX化
-* breeze(認証機能)導入
-* TailwindCSS 導入
-
-これを元に新たに開発いただいても構いません。
-
-以下のコマンドを入力してから.gitを削除してください。
-
-```bash
-git checkout devlop
-```
-
-### .envファイルを編集する
-
-```bash
-$ vi .env
-
-以下の内容に編集を行う。
-
-APP_DEBUG = false
-QUEUE_CONNECTION=database
 ```
 
 ### 環境構築用のシェルスクリプトを実行する
@@ -70,33 +43,25 @@ QUEUE_CONNECTION=database
 chmod u+x build_env.sh && ./build_env.sh
 ```
 
-### ファイルパーミッションを更新する
-
-```bash
-chmod u+x set_permission.sh &&  ./set_permission.sh
-```
-
 ### サイト設定を行う
 
 ```bash
 PHPコンテナログイン
-$ docker-compose exec laravel_php /bin/bash
-$ cd project
+docker-compose exec app /bin/bash
 
-*パブリック画面ファイル作成初回時以下のコマンドを実施
-$ chmod -R a+x node_modules
-
-パブリック画面ファイル作成
-$ npm run prod
 つぶやき機能投稿画像参照リンク作成（新たに開発する場合は必要なし）
-$ php artisan storage:link
+php artisan storage:link
 Laracvelキャッシュクリア
-$ php artisan cache:clear
-$ php artisan config:clear
-$ php artisan route:clear
-$ php artisan view:clear
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+DBマイグレーション実施
+php artisan migrate
+
 管理者アカウント設定
-$ php artisan db:seed --class=UsersSeeder
+php artisan db:seed --class=UsersSeeder
 ```
 
 ### 各種サイト確認する
@@ -159,22 +124,6 @@ docker-compose exec laravel_php /bin/bash
 docker-compose exec laravel_db /bin/bash
 ```
 
-## その他
-
-開発中に以下のコマンドを実行してください。
-
-```bash
-docker-compose exec laravel_php /bin/bash
-cd project
-
-npm run watch
-```
-
-### npm run watchコマンドとは
-
-npm run watchコマンドはターミナルで実行し続け、関連ファイル全部の変更を監視します。
-Webpackは変更を感知すると、アセットを自動的に再コンパイルします。
-
 ## LaravelTest(CICDにいれる予定)
 
 ```bash
@@ -205,7 +154,7 @@ vendor/bin/phpunit
 設定ファイル：
 
 ```bash
-database/seeeders/DatabaseSeeder.php
+database/seeeders/UsersSeeder.php
 ```
 
 適用：
