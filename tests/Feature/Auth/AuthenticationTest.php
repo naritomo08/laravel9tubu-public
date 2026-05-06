@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Fortify;
 use Tests\TestCase;
 
@@ -68,6 +69,48 @@ class AuthenticationTest extends TestCase
             ]);
 
         $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
+    public function test_two_factor_rate_limit_is_scoped_to_challenged_user()
+    {
+        $firstUser = User::factory()->create([
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('ABCDEFGHIJKLMNOP'),
+            'two_factor_recovery_codes' => Fortify::currentEncrypter()->encrypt(json_encode(['first-recovery-code'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $secondUser = User::factory()->create([
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('ABCDEFGHIJKLMNOP'),
+            'two_factor_recovery_codes' => Fortify::currentEncrypter()->encrypt(json_encode(['second-recovery-code'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        RateLimiter::clear('login:'.$firstUser->id);
+        RateLimiter::clear('login:'.$secondUser->id);
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this
+                ->withSession([
+                    'login.id' => $firstUser->id,
+                    'login.remember' => false,
+                ])
+                ->post('/two-factor-challenge', [
+                    'recovery_code' => 'wrong-recovery-code',
+                ])
+                ->assertStatus(302);
+        }
+
+        $response = $this
+            ->withSession([
+                'login.id' => $secondUser->id,
+                'login.remember' => false,
+            ])
+            ->post('/two-factor-challenge', [
+                'recovery_code' => 'second-recovery-code',
+            ]);
+
+        $this->assertAuthenticatedAs($secondUser);
         $response->assertRedirect(RouteServiceProvider::HOME);
     }
 

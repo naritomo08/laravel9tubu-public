@@ -206,7 +206,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(165テスト)
+#### php artisan test で実行されるテスト(166テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -250,7 +250,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会時に削除受付フラグを立てて削除Jobを投入しログアウトすることを検証。 |
 | `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示、管理者自身の2FA有効時だけ可能な他ユーザーのメールアドレス変更と認証メール送信、自分自身とSeeder固定管理者のメール変更拒否、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得、管理者自身の2FA有効時だけ可能な管理者画面からの予約投稿削除、通知メール設定表示、Google連携表示、2FA有効状態表示、管理者ステータスAPIの管理者権限・2FA状態返却、管理者自身の2FA未設定時のユーザー関連操作拒否、管理者による他ユーザーの2FAリセット、自分自身とSeeder固定管理者の2FAリセット拒否、非管理者の操作拒否を検証。 |
-| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、2FA有効ユーザーが2FAチャレンジへ遷移すること、リカバリーコードで2FAログインを完了できること、2FA完了後も非管理者が古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
+| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、2FA有効ユーザーが2FAチャレンジへ遷移すること、リカバリーコードで2FAログインを完了できること、2FAチャレンジのレート制限がユーザー単位で分離されること、2FA完了後も非管理者が古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
 | `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
@@ -337,6 +337,7 @@ QRコードを認証アプリで読み取り
 | ファイル | 内容 |
 | --- | --- |
 | `config/fortify.php` | Fortifyの2段階認証機能を有効化。QRコード確認必須、操作前パスワード確認必須。 |
+| `app/Providers/RouteServiceProvider.php` | 2FAチャレンジのレート制限を、ログイン途中のユーザーID単位で定義。 |
 | `app/Providers/FortifyServiceProvider.php` | Fortifyの2FA画面とログイン完了レスポンスをアプリ側に紐付け。 |
 | `app/Models/User.php` | `TwoFactorAuthenticatable` trait を追加し、2FA有効判定やQRコード生成を利用。 |
 | `routes/auth.php` | 2FAチャレンジ、有効化、確認、無効化、リカバリーコード再生成のルート。 |
@@ -344,7 +345,6 @@ QRコードを認証アプリで読み取り
 | `resources/views/account/index.blade.php` | 2FAの有効化、QRコード表示、確認、無効化UI。 |
 | `resources/views/admin/users/_rows.blade.php` | 管理者画面の2FA状態表示と2FAリセット操作。 |
 | `resources/views/auth/two-factor-challenge.blade.php` | ログイン時の2FAコード入力画面。 |
-| `database/migrations/2026_05_06_000001_add_two_factor_columns_to_users_table.php` | `users` テーブルへ2FA用カラムを追加。 |
 
 ## 管理者画面
 

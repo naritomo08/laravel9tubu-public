@@ -33,7 +33,7 @@ Route::middleware('guest')->group(function () {
                 ->name('two-factor.login');
 
     Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store'])
-                ->middleware('throttle:5,1')
+                ->middleware('throttle:two-factor')
                 ->name('two-factor.login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
