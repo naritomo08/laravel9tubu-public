@@ -15,6 +15,23 @@
         @endif
 
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
+        <x-auth-validation-errors class="mb-4" :errors="$errors->confirmTwoFactorAuthentication" />
+
+        @php
+            $user = Auth::user();
+            $twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
+            $twoFactorPending = filled($user->two_factor_secret) && ! $twoFactorEnabled;
+            $twoFactorStatusMessages = [
+                Laravel\Fortify\Fortify::TWO_FACTOR_AUTHENTICATION_ENABLED => '認証アプリでQRコードを読み取り、認証コードを入力して2段階認証を有効化してください。',
+                Laravel\Fortify\Fortify::TWO_FACTOR_AUTHENTICATION_CONFIRMED => '2段階認証を有効化しました。',
+                Laravel\Fortify\Fortify::TWO_FACTOR_AUTHENTICATION_DISABLED => '2段階認証を無効化しました。',
+                Laravel\Fortify\Fortify::RECOVERY_CODES_GENERATED => 'リカバリーコードを再生成しました。',
+            ];
+        @endphp
+
+        @if (session('status') && isset($twoFactorStatusMessages[session('status')]))
+            <x-alert.success>{{ $twoFactorStatusMessages[session('status')] }}</x-alert.success>
+        @endif
 
         <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-xl font-bold mb-4">あなたのつぶやき・いいね集計</h3>
@@ -154,6 +171,103 @@
                     >
                         Googleアカウントを連携する
                     </a>
+                </div>
+            @endif
+        </div>
+
+        <div class="bg-white border border-gray-200 p-6 mb-8 dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="text-xl font-bold mb-4">2段階認証</h3>
+
+            @if ($twoFactorEnabled)
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    2段階認証は有効です。ログイン時に認証アプリのコード、またはリカバリーコードが必要になります。
+                </p>
+
+                @if ($user->two_factor_recovery_codes)
+                    <div class="mt-4">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">リカバリーコード</p>
+                        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                            @foreach ($user->recoveryCodes() as $code)
+                                <code class="block border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">{{ $code }}</code>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <div class="mt-6 flex flex-wrap justify-end gap-3">
+                    <form method="POST" action="{{ route('two-factor.regenerate-recovery-codes') }}">
+                        @csrf
+
+                        <x-button type="submit">
+                            リカバリーコードを再生成する
+                        </x-button>
+                    </form>
+
+                    <form method="POST" action="{{ route('two-factor.disable') }}">
+                        @csrf
+                        @method('DELETE')
+
+                        <x-button type="submit">
+                            無効化する
+                        </x-button>
+                    </form>
+                </div>
+            @elseif ($twoFactorPending)
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    認証アプリでQRコードを読み取り、表示された6桁のコードを入力してください。
+                </p>
+
+                <div class="mt-4 inline-block border border-gray-200 bg-white p-4 dark:border-gray-700">
+                    {!! $user->twoFactorQrCodeSvg() !!}
+                </div>
+
+                @if ($user->two_factor_recovery_codes)
+                    <div class="mt-4">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">リカバリーコード</p>
+                        <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                            @foreach ($user->recoveryCodes() as $code)
+                                <code class="block border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">{{ $code }}</code>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('two-factor.confirm') }}" class="mt-6">
+                    @csrf
+
+                    <div>
+                        <x-label for="two_factor_code" value="認証コード" />
+                        <x-input id="two_factor_code" class="block mt-1 w-full" type="text" inputmode="numeric" name="code" required autocomplete="one-time-code" />
+                    </div>
+
+                    <div class="mt-6 flex flex-wrap justify-end gap-3">
+                        <x-button type="submit">
+                            有効化を完了する
+                        </x-button>
+                    </div>
+                </form>
+
+                <form method="POST" action="{{ route('two-factor.disable') }}" class="mt-3 flex justify-end">
+                    @csrf
+                    @method('DELETE')
+
+                    <x-button type="submit">
+                        設定を取り消す
+                    </x-button>
+                </form>
+            @else
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                    認証アプリを使った2段階認証を追加できます。有効化操作では、先に現在のパスワード確認が求められます。
+                </p>
+
+                <div class="flex justify-end mt-6">
+                    <form method="POST" action="{{ route('two-factor.enable') }}">
+                        @csrf
+
+                        <x-button type="submit">
+                            有効化する
+                        </x-button>
+                    </form>
                 </div>
             @endif
         </div>

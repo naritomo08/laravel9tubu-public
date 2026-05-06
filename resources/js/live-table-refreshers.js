@@ -10,7 +10,43 @@ const escapeHtml = (value) => {
     return div.innerHTML;
 };
 
-const startJsonPoller = ({ tableSelector, bodySelector, urlDatasetKey, onData, errorMessage }) => {
+const isEditableElement = (element) => {
+    if (!element) {
+        return false;
+    }
+
+    return ['INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName) || element.isContentEditable;
+};
+
+const hasActiveEditor = (body) => {
+    return body.contains(document.activeElement) && isEditableElement(document.activeElement);
+};
+
+const hasDirtyRefreshGuard = (body) => {
+    return body.querySelector('[data-live-refresh-editing="true"]') !== null;
+};
+
+const setupEditRefreshGuards = (body) => {
+    body.querySelectorAll('[data-live-refresh-edit-guard]').forEach((input) => {
+        const form = input.closest('form');
+
+        if (!form || form.dataset.refreshGuardInitialized === 'true') {
+            return;
+        }
+
+        form.dataset.refreshGuardInitialized = 'true';
+
+        form.addEventListener('input', () => {
+            form.dataset.liveRefreshEditing = 'true';
+        });
+
+        form.addEventListener('submit', () => {
+            delete form.dataset.liveRefreshEditing;
+        });
+    });
+};
+
+const startJsonPoller = ({ tableSelector, bodySelector, urlDatasetKey, onData, errorMessage, beforeRefresh, shouldSkipRefresh }) => {
     const table = document.querySelector(tableSelector);
     const body = document.querySelector(bodySelector);
 
@@ -25,8 +61,13 @@ const startJsonPoller = ({ tableSelector, bodySelector, urlDatasetKey, onData, e
     }
 
     table.dataset.initialized = 'true';
+    beforeRefresh?.(body);
 
     const refresh = async () => {
+        if (shouldSkipRefresh?.(body)) {
+            return;
+        }
+
         try {
             const response = await fetch(url, { headers: requestHeaders });
 
@@ -35,6 +76,7 @@ const startJsonPoller = ({ tableSelector, bodySelector, urlDatasetKey, onData, e
             }
 
             onData(await response.json(), body);
+            beforeRefresh?.(body);
         } catch (error) {
             console.error(errorMessage, error);
         }
@@ -115,6 +157,8 @@ export const setupLiveTableRefreshers = () => {
         bodySelector: '[data-admin-users-body]',
         urlDatasetKey: 'usersUrl',
         onData: renderHtmlResponse,
+        beforeRefresh: setupEditRefreshGuards,
+        shouldSkipRefresh: (body) => hasActiveEditor(body) || hasDirtyRefreshGuard(body),
         errorMessage: 'Error refreshing admin users:',
     });
 };

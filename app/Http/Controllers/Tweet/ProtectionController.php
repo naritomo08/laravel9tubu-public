@@ -16,6 +16,10 @@ class ProtectionController extends Controller
             abort(403, 'Seeder管理者のみ保護設定を変更できます');
         }
 
+        if (! $user->hasEnabledTwoFactorAuthentication()) {
+            return back()->with('feedback.error', '他ユーザーのつぶやきを保護するには、管理者自身の2段階認証を有効化してください');
+        }
+
         if ($tweet->user()->where('is_seed_admin', true)->exists()) {
             return back()->with('feedback.error', 'Seeder管理者のつぶやきは保護設定の対象外です');
         }

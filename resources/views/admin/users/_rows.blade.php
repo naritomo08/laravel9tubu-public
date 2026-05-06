@@ -1,8 +1,29 @@
+@php
+    $canManageUsers = Auth::user()?->hasEnabledTwoFactorAuthentication();
+@endphp
+
 @foreach($users as $user)
     <tr>
         <td class="py-2 px-4 border-b dark:border-gray-700">{{ $user->name }}</td>
         <td class="py-2 px-4 border-b dark:border-gray-700">
             {{ $user->email }}
+            @if($canManageUsers && Auth::id() !== $user->id && ! $user->is_seed_admin)
+                <form method="POST" action="{{ route('admin.users.email.update', $user->id) }}" class="mt-2 flex flex-wrap items-center gap-2" onsubmit="return confirm('このユーザーのメールアドレスを変更しますか？');">
+                    @csrf
+                    @method('PUT')
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ $user->email }}"
+                        required
+                        data-live-refresh-edit-guard
+                        class="w-56 rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                    <x-element.button theme="secondary">
+                        メール変更
+                    </x-element.button>
+                </form>
+            @endif
         </td>
         <td class="py-2 px-4 border-b text-center dark:border-gray-700">
             @if($user->is_admin)
@@ -30,7 +51,21 @@
             @endif
         </td>
         <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-            @if(Auth::id() !== $user->id)
+            @if($user->hasEnabledTwoFactorAuthentication())
+                <span class="text-green-600 font-bold">✔</span>
+            @endif
+        </td>
+        <td class="py-2 px-4 border-b text-center dark:border-gray-700">
+            @if($canManageUsers && Auth::id() !== $user->id)
+                @if($user->hasEnabledTwoFactorAuthentication() && ! $user->is_seed_admin)
+                    <form method="POST" action="{{ route('admin.users.two-factor.reset', $user->id) }}" class="inline-block" onsubmit="return confirm('このユーザーの2段階認証をリセットしますか？');">
+                        @csrf
+                        @method('PUT')
+                        <x-element.button theme="secondary">
+                            2FAリセット
+                        </x-element.button>
+                    </form>
+                @endif
                 @if($user->is_admin)
                     @if(!$user->is_seed_admin)
                         <form method="POST" action="{{ route('admin.users.admin.update', $user->id) }}" class="inline-block" onsubmit="return confirm('管理者から外しますか？');">
@@ -53,7 +88,7 @@
                     </form>
                 @endif
             @endif
-            @if(!$user->is_admin)
+            @if($canManageUsers && !$user->is_admin)
                 <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" class="inline-block" onsubmit="return confirm('本当に削除しますか？');">
                     @csrf
                     @method('DELETE')

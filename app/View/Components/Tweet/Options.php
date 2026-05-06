@@ -38,14 +38,15 @@ class Options extends Component
         $user = \Illuminate\Support\Facades\Auth::user();
         $isMyTweet = $user && $user->id === $this->userId;
         $isSeedAdmin = $user && $user->is_seed_admin;
-        $canManageProtection = $isSeedAdmin && !$this->tweetUserIsSeedAdmin;
+        $adminCanManageOtherTweet = $user && $user->is_admin && ! $isMyTweet && $user->hasEnabledTwoFactorAuthentication();
+        $canManageProtection = $isSeedAdmin && $adminCanManageOtherTweet && !$this->tweetUserIsSeedAdmin;
         $canEditTweet = $isMyTweet && !$this->isProtected;
         $canDeleteSeededTweet = !$this->isSeeded || ($isSeedAdmin && $isMyTweet);
         $canDeleteProtectedTweet = !$this->isProtected || $isSeedAdmin;
         $canDeleteTweet = $user
             && $canDeleteSeededTweet
             && $canDeleteProtectedTweet
-            && ($user->is_admin || $isMyTweet);
+            && ($isMyTweet || $adminCanManageOtherTweet);
         $isAllTweet = true; // 全てのTweetに対してtrue
         return view('components.tweet.options')
             ->with('tweetId', $this->tweetId)

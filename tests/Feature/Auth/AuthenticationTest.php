@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Fortify\Fortify;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -29,6 +30,69 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
+    public function test_users_with_two_factor_authentication_are_redirected_to_challenge()
+    {
+        $user = User::factory()->create([
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('ABCDEFGHIJKLMNOP'),
+            'two_factor_recovery_codes' => Fortify::currentEncrypter()->encrypt(json_encode(['recovery-code'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertRedirect(route('two-factor.login'));
+        $response->assertSessionHas('login.id', $user->id);
+    }
+
+    public function test_users_can_finish_two_factor_challenge_with_recovery_code()
+    {
+        $user = User::factory()->create([
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('ABCDEFGHIJKLMNOP'),
+            'two_factor_recovery_codes' => Fortify::currentEncrypter()->encrypt(json_encode(['recovery-code'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this
+            ->withSession([
+                'login.id' => $user->id,
+                'login.remember' => false,
+            ])
+            ->post('/two-factor-challenge', [
+                'recovery_code' => 'recovery-code',
+            ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+    }
+
+    public function test_non_admin_two_factor_users_are_not_redirected_to_stale_admin_intended_url()
+    {
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'two_factor_secret' => Fortify::currentEncrypter()->encrypt('ABCDEFGHIJKLMNOP'),
+            'two_factor_recovery_codes' => Fortify::currentEncrypter()->encrypt(json_encode(['recovery-code'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this
+            ->withSession([
+                'login.id' => $user->id,
+                'login.remember' => false,
+                'url.intended' => route('admin.users.index'),
+            ])
+            ->post('/two-factor-challenge', [
+                'recovery_code' => 'recovery-code',
+            ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertSessionMissing('url.intended');
     }
 
     public function test_non_admin_users_are_not_redirected_to_stale_admin_intended_url_after_login()

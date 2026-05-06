@@ -70,6 +70,7 @@ export const setupAdminNavWatch = () => {
 
     const statusUrl = target.dataset.statusUrl;
     const adminUrl = target.dataset.adminUrl;
+    const twoFactorWarning = document.querySelector('[data-admin-two-factor-warning]');
 
     if (!statusUrl || !adminUrl) {
         return;
@@ -117,6 +118,10 @@ export const setupAdminNavWatch = () => {
             } else if (!data.is_admin && target.dataset.isAdmin === 'true') {
                 target.dataset.isAdmin = 'false';
                 target.innerHTML = '';
+            }
+
+            if (data.has_two_factor_enabled && twoFactorWarning) {
+                twoFactorWarning.remove();
             }
         } finally {
             checking = false;

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
 
 class LoginRequest extends FormRequest
 {
@@ -62,7 +63,26 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($this->user()?->hasEnabledTwoFactorAuthentication()) {
+            $user = $this->user();
+
+            Auth::guard('web')->logout();
+
+            $this->session()->put([
+                'login.id' => $user->getKey(),
+                'login.remember' => $this->boolean('remember'),
+            ]);
+
+            event(new TwoFactorAuthenticationChallenged($user));
+
+            RateLimiter::clear($this->throttleKey());
+
+            return redirect()->route('two-factor.login');
+        }
+
         RateLimiter::clear($this->throttleKey());
+
+        return null;
     }
 
     /**
