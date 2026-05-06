@@ -49,7 +49,9 @@ class LegalDocumentController extends Controller
 
     private function renderMarkdown(string $document, string $path): string
     {
-        return Cache::remember("legal_document:{$document}", self::CACHE_TTL_SECONDS, function () use ($path) {
+        $cacheKey = sprintf('legal_document:%s:%s', $document, md5_file($path));
+
+        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($path) {
             return Str::markdown(file_get_contents($path), [
                 'html_input' => 'strip',
                 'allow_unsafe_links' => false,

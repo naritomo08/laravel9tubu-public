@@ -16,7 +16,9 @@ class LegalDocumentTest extends TestCase
 
     public function test_terms_page_uses_cached_markdown_content()
     {
-        Cache::put('legal_document:terms', '<p>Cached legal terms content</p>');
+        $path = resource_path('markdown/terms.md');
+
+        Cache::put('legal_document:terms:' . md5_file($path), '<p>Cached legal terms content</p>');
 
         $this->get('/terms')
             ->assertOk()

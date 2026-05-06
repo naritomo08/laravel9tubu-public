@@ -74,7 +74,7 @@ http://127.0.0.1:8080/tweet
 
 ### 利用規約・プライバシーポリシー・お問い合わせ
 
-利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換し、変換後のHTMLをキャッシュします。
+利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換し、変換後のHTMLをMarkdown内容のハッシュ付きキーでキャッシュします。
 
 | 表示ページ | Markdownファイル |
 | --- | --- |
@@ -85,13 +85,7 @@ http://127.0.0.1:8080/tweet
 
 管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `admin@tubuyaki.com` 宛に送信されます。
 
-本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。
-
-編集後に表示が更新されない場合は、PHPコンテナ内で以下を実行してアプリケーションキャッシュを削除してください。
-
-```bash
-php artisan cache:clear
-```
+本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。Markdownの内容が変わるとキャッシュキーも変わるため、通常はアプリケーションキャッシュの削除は不要です。
 
 ### adminer(DB管理ツール)
 
@@ -260,7 +254,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Console/SendDailyTweetCountMailTest.php` | 日次送付メールに各ユーザーのつぶやき数・いいね数が含まれること、未認証ユーザーや通知無効ユーザーへ送信されないことを検証。 |
 | `tests/Feature/ContactTest.php` | 問い合わせ画面のログイン必須、ログイン済みユーザー情報の固定表示、管理者アドレスへの問い合わせメールのキュー投入、バリデーション失敗時に送信されないことを検証。 |
 | `tests/Feature/ExampleTest.php` | `/tweet` が `200 OK` を返すことを確認する基本スモークテスト。 |
-| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示、法務文書HTMLキャッシュ利用、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
+| `tests/Feature/LegalDocumentTest.php` | 利用規約・プライバシーポリシーのMarkdown表示、Markdown内容のハッシュ付きキーによる法務文書HTMLキャッシュ利用、ゲスト画面・通常画面で共通リンクと問い合わせリンクが表示されることを検証。 |
 | `tests/Feature/Tweet/ContentLengthTest.php` | つぶやき作成・編集で設定値に基づく最大文字数バリデーションが効くこと、投稿フォーム・編集フォームに最大文字数表示と動的カウント用の設定が出力されることを検証。 |
 | `tests/Feature/Tweet/CreateTest.php` | Seeder固定管理者が作成したつぶやきはSeeder作成扱いになり、通常管理者が作成したつぶやきはSeeder作成扱いにならないことを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
