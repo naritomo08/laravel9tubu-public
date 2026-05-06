@@ -206,7 +206,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(142テスト)
+#### php artisan test で実行されるテスト(143テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -264,7 +264,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Tweet/ContentLengthTest.php` | つぶやき作成・編集で設定値に基づく最大文字数バリデーションが効くこと、投稿フォーム・編集フォームに最大文字数表示と動的カウント用の設定が出力されることを検証。 |
 | `tests/Feature/Tweet/CreateTest.php` | Seeder固定管理者が作成したつぶやきはSeeder作成扱いになり、通常管理者が作成したつぶやきはSeeder作成扱いにならないことを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
-| `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
+| `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得、`after_id=0` 時の返却件数上限、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/LikeTest.php` | 同一ユーザー・同一投稿へのいいね追加が競合しても正常に `is_liked` と `like_count` を返すことを検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
 | `tests/Feature/Tweet/ScheduledPostTest.php` | 予約投稿の作成、予約時刻までの一覧・検索・新着取得からの非表示、予約時刻後の表示、予約日時を表示時刻として扱うこと、予約日時順で並ぶことを検証。 |

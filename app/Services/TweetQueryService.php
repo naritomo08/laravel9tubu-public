@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class TweetQueryService
 {
     public const TWEETS_PER_PAGE = 50;
+    public const LATEST_TWEETS_LIMIT = self::TWEETS_PER_PAGE;
 
     public function getTweets(int $page = 1): LengthAwarePaginator
     {
@@ -31,6 +32,7 @@ class TweetQueryService
             ->visibleTo(Auth::user())
             ->where('id', '>', $tweetId)
             ->orderBy('id', 'DESC')
+            ->limit(self::LATEST_TWEETS_LIMIT)
             ->get();
 
         $this->attachLikeAttributes($tweets);
