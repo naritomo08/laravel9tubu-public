@@ -1,3 +1,17 @@
+const updateTweetSubmitState = (button) => {
+    if (!button) {
+        return;
+    }
+
+    button.dataset.defaultLabel = button.dataset.defaultLabel || button.textContent.trim();
+
+    const textInvalid = button.dataset.tweetTextInvalid === 'true';
+    const imageProcessing = button.dataset.tweetImageProcessing === 'true';
+
+    button.disabled = textInvalid || imageProcessing;
+    button.textContent = imageProcessing ? '処理中...' : button.dataset.defaultLabel;
+};
+
 const createTweetImageFormHandler = () => ({
     maxImageSize: 200 * 1024,
     targetImageSize: 190 * 1024,
@@ -23,12 +37,27 @@ const createTweetImageFormHandler = () => ({
         this.fields.push({
             file: '',
             id: `input-image-${i}`,
+            previewUrl: '',
             processing: false,
             compressed: false,
         });
     },
     removeField(index) {
+        this.clearFieldPreview(this.fields[index]);
         this.fields.splice(index, 1);
+    },
+    submitButton() {
+        return this.$el.closest('form')?.querySelector('[data-tweet-submit]');
+    },
+    updateSubmitButton() {
+        const button = this.submitButton();
+
+        if (!button) {
+            return;
+        }
+
+        button.dataset.tweetImageProcessing = this.pendingCompressions > 0 ? 'true' : 'false';
+        updateTweetSubmitState(button);
     },
     async handleFileChange(event, index) {
         const file = event.target.files[0] || '';
@@ -37,6 +66,7 @@ const createTweetImageFormHandler = () => ({
         field.file = file;
         field.processing = false;
         field.compressed = false;
+        this.setFieldPreview(field, file);
 
         if (!file || file.size <= this.maxImageSize || !file.type.startsWith('image/')) {
             return;
@@ -44,6 +74,7 @@ const createTweetImageFormHandler = () => ({
 
         field.processing = true;
         this.pendingCompressions += 1;
+        this.updateSubmitButton();
 
         try {
             const compressedFile = await this.compressImage(file);
@@ -53,11 +84,13 @@ const createTweetImageFormHandler = () => ({
             event.target.files = dataTransfer.files;
             field.file = compressedFile;
             field.compressed = compressedFile.size < file.size;
+            this.setFieldPreview(field, compressedFile);
         } catch (error) {
             console.error('Image compression failed:', error);
         } finally {
             field.processing = false;
             this.pendingCompressions = Math.max(0, this.pendingCompressions - 1);
+            this.updateSubmitButton();
 
             if (this.pendingCompressions === 0 && this.shouldSubmitWhenReady) {
                 this.shouldSubmitWhenReady = false;
@@ -121,6 +154,23 @@ const createTweetImageFormHandler = () => ({
     },
     compressedFileName(fileName) {
         return fileName.replace(/\.[^.]+$/, '') + '.jpg';
+    },
+    setFieldPreview(field, file) {
+        this.clearFieldPreview(field);
+
+        if (!file || !file.type.startsWith('image/')) {
+            return;
+        }
+
+        field.previewUrl = URL.createObjectURL(file);
+    },
+    clearFieldPreview(field) {
+        if (!field?.previewUrl) {
+            return;
+        }
+
+        URL.revokeObjectURL(field.previewUrl);
+        field.previewUrl = '';
     },
 });
 
@@ -188,6 +238,7 @@ const createTweetImageModalHandler = () => ({
 });
 
 export const setupAlpineComponents = (Alpine) => {
+    window.updateTweetSubmitState = updateTweetSubmitState;
     window.inputFormHandler = createTweetImageFormHandler;
     window.tweetImageModalHandler = createTweetImageModalHandler;
 
