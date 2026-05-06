@@ -206,7 +206,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(140テスト)
+#### php artisan test で実行されるテスト(142テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -232,6 +232,7 @@ tests/Feature/Tweet/ContentLengthTest.php
 tests/Feature/Tweet/CreateTest.php
 tests/Feature/Tweet/DeleteTest.php
 tests/Feature/Tweet/LatestTest.php
+tests/Feature/Tweet/LikeTest.php
 tests/Feature/Tweet/ProtectionTest.php
 tests/Feature/Tweet/ScheduledPostTest.php
 tests/Feature/Tweet/SearchTest.php
@@ -243,7 +244,7 @@ tests/Feature/Tweet/UpdateTest.php
 | --- | --- |
 | `tests/Unit/ExampleTest.php` | `true` が `true` であることだけを確認するサンプルテスト。 |
 | `tests/Unit/Services/TweetImageServiceTest.php` | つぶやき画像の保存・紐付けと、画像削除時のファイル・中間テーブル・画像レコード削除を検証。 |
-| `tests/Unit/Services/TweetQueryServiceTest.php` | つぶやき一覧取得時のいいね状態・件数の一括付与を検証。 |
+| `tests/Unit/Services/TweetQueryServiceTest.php` | つぶやき一覧取得時のいいね状態・件数の一括付与、一覧・検索・新着取得・いいね状態取得で削除受付済みユーザーのいいねを除外して同じ件数になることを検証。 |
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` の自分の投稿判定を検証。 |
 | `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ること、削除受付時に削除予定フラグを立てて削除Jobを一度だけ投入することを検証。 |
 | `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
@@ -264,6 +265,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Tweet/CreateTest.php` | Seeder固定管理者が作成したつぶやきはSeeder作成扱いになり、通常管理者が作成したつぶやきはSeeder作成扱いにならないことを検証。 |
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得と、ユーザー名・画像更新時の差分HTML返却を検証。 |
+| `tests/Feature/Tweet/LikeTest.php` | 同一ユーザー・同一投稿へのいいね追加が競合しても正常に `is_liked` と `like_count` を返すことを検証。 |
 | `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
 | `tests/Feature/Tweet/ScheduledPostTest.php` | 予約投稿の作成、予約時刻までの一覧・検索・新着取得からの非表示、予約時刻後の表示、予約日時を表示時刻として扱うこと、予約日時順で並ぶことを検証。 |
 | `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索時は入力文字列では絞り込まず選択ユーザーで絞り込むこと、ユーザー選択候補の表示・JSON取得、登録直後の未認証ユーザー除外とメール変更後の未認証ユーザー表示、`user:""` を通常キーワードとして扱うことを検証。 |
