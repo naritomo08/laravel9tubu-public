@@ -37,6 +37,11 @@
                 @endif
             </div>
         @endif
+        @if(Auth::check() && Auth::user()->is_admin && !Auth::user()->hasEnabledTwoFactorAuthentication())
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" data-admin-two-factor-warning>
+                管理者自身の2段階認証が未設定のため、他ユーザーのつぶやきの編集・削除はできません。2段階認証はアカウント設定から有効化できます。
+            </div>
+        @endif
         @if (session('feedback.success'))
             <x-alert.success>{{ session('feedback.success') }}</x-alert.success>
         @endif

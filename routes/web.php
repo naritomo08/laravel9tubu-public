@@ -24,6 +24,7 @@ Route::get('/like/status', \App\Http\Controllers\Like\StatusController::class)->
 Route::middleware('auth')->get('/account/admin-status', function () {
     return response()->json([
         'is_admin' => (bool) request()->user()->is_admin,
+        'has_two_factor_enabled' => request()->user()->hasEnabledTwoFactorAuthentication(),
     ]);
 })->name('account.admin.status');
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -57,6 +58,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/users/list', [\App\Http\Controllers\Admin\UserController::class, 'listUsers'])->name('admin.users.list');
     Route::get('/admin/users/scheduled-tweets', [\App\Http\Controllers\Admin\UserController::class, 'listScheduledTweets'])->name('admin.users.scheduled-tweets');
     Route::put('/admin/users/{user}/admin', [\App\Http\Controllers\Admin\UserController::class, 'updateAdmin'])->name('admin.users.admin.update');
+    Route::put('/admin/users/{user}/email', [\App\Http\Controllers\Admin\UserController::class, 'updateEmail'])->name('admin.users.email.update');
+    Route::put('/admin/users/{user}/two-factor', [\App\Http\Controllers\Admin\UserController::class, 'resetTwoFactor'])->name('admin.users.two-factor.reset');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
 });
 

@@ -10,6 +10,11 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\ConfirmedTwoFactorAuthenticationController;
+use Laravel\Fortify\Http\Controllers\RecoveryCodeController;
+use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
+use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController;
+use Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -23,6 +28,13 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
     Route::get('auth/google', [GoogleAuthController::class, 'redirectForLogin'])
                 ->name('auth.google.redirect');
+
+    Route::get('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'create'])
+                ->name('two-factor.login');
+
+    Route::post('two-factor-challenge', [TwoFactorAuthenticatedSessionController::class, 'store'])
+                ->middleware('throttle:5,1')
+                ->name('two-factor.login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
                 ->name('password.request');
@@ -62,6 +74,26 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->name('logout');
+});
+
+Route::middleware(['auth', 'password.confirm'])->group(function () {
+    Route::post('user/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store'])
+                ->name('two-factor.enable');
+
+    Route::post('user/confirmed-two-factor-authentication', [ConfirmedTwoFactorAuthenticationController::class, 'store'])
+                ->name('two-factor.confirm');
+
+    Route::delete('user/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])
+                ->name('two-factor.disable');
+
+    Route::get('user/two-factor-qr-code', [TwoFactorQrCodeController::class, 'show'])
+                ->name('two-factor.qr-code');
+
+    Route::get('user/two-factor-recovery-codes', [RecoveryCodeController::class, 'index'])
+                ->name('two-factor.recovery-codes');
+
+    Route::post('user/two-factor-recovery-codes', [RecoveryCodeController::class, 'store'])
+                ->name('two-factor.regenerate-recovery-codes');
 });
 
 Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])

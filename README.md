@@ -206,7 +206,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(143テスト)
+#### php artisan test で実行されるテスト(165テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -249,8 +249,8 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ること、削除受付時に削除予定フラグを立てて削除Jobを一度だけ投入することを検証。 |
 | `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
 | `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会時に削除受付フラグを立てて削除Jobを投入しログアウトすることを検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示専用化、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得・削除、通知メール設定表示、Google連携表示、非管理者の操作拒否を検証。 |
-| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、非管理者ログイン時に古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示、管理者自身の2FA有効時だけ可能な他ユーザーのメールアドレス変更と認証メール送信、自分自身とSeeder固定管理者のメール変更拒否、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得、管理者自身の2FA有効時だけ可能な管理者画面からの予約投稿削除、通知メール設定表示、Google連携表示、2FA有効状態表示、管理者ステータスAPIの管理者権限・2FA状態返却、管理者自身の2FA未設定時のユーザー関連操作拒否、管理者による他ユーザーの2FAリセット、自分自身とSeeder固定管理者の2FAリセット拒否、非管理者の操作拒否を検証。 |
+| `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、2FA有効ユーザーが2FAチャレンジへ遷移すること、リカバリーコードで2FAログインを完了できること、2FA完了後も非管理者が古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
 | `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
@@ -266,7 +266,7 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Feature/Tweet/DeleteTest.php` | ログインユーザーが投稿削除後に一覧へ遷移すること、検索画面から削除した場合は検索条件を維持して戻り通知が出ること、Seeder作成つぶやきはSeeder固定管理者本人以外の管理者が削除できないこと、既存のSeeder固定管理者つぶやきを削除保護対象に自動反映できることを検証。 |
 | `tests/Feature/Tweet/LatestTest.php` | `/tweet/latest` の新着取得、`after_id=0` 時の返却件数上限、ユーザー名・画像更新時の差分HTML返却を検証。 |
 | `tests/Feature/Tweet/LikeTest.php` | 同一ユーザー・同一投稿へのいいね追加が競合しても正常に `is_liked` と `like_count` を返すことを検証。 |
-| `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
+| `tests/Feature/Tweet/ProtectionTest.php` | Seeder固定管理者だけが一般ユーザーのつぶやきを保護/解除できること、Seeder固定管理者のつぶやきは保護対象外であること、管理者自身の2FA未設定時はトップ画面に警告が表示され、他ユーザーのつぶやき保護・削除とメニュー表示が抑止されること、保護されたつぶやきはSeeder固定管理者以外が編集・削除できないこと、Seeder固定管理者は保護済みつぶやきを削除できるが編集できないこと、保護表記とメニュー表示を検証。 |
 | `tests/Feature/Tweet/ScheduledPostTest.php` | 予約投稿の作成、予約時刻までの一覧・検索・新着取得からの非表示、予約時刻後の表示、予約日時を表示時刻として扱うこと、予約日時順で並ぶことを検証。 |
 | `tests/Feature/Tweet/SearchTest.php` | つぶやき検索画面のログイン必須、本文検索、空検索0件、ページネーション、空ページ時の最終ページ移動、ユーザー検索時は入力文字列では絞り込まず選択ユーザーで絞り込むこと、ユーザー選択候補の表示・JSON取得、登録直後の未認証ユーザー除外とメール変更後の未認証ユーザー表示、`user:""` を通常キーワードとして扱うことを検証。 |
 | `tests/Feature/Tweet/SecretModeTest.php` | シークレットモードのつぶやきが投稿者本人と管理者だけに表示されること、作成・編集時に設定が保存されること、検索・新着取得・いいね状態取得・いいね操作で第三者に参照されないことを検証。 |
@@ -306,6 +306,46 @@ http://127.0.0.1:8080/auth/google/callback
 
 https://qiita.com/mnoguchi/items/7d7795444afb9d9dafa8
 
+## 2段階認証
+
+2段階認証は Laravel Fortify を使用しています。メール認証とは別のログイン保護で、パスワード認証後に認証アプリの6桁コード、またはリカバリーコードを求めます。
+
+初期状態では、既存ユーザーと新規登録ユーザーのどちらも2段階認証は無効です。ログイン済みかつメール認証済みユーザーが `/account` の「2段階認証」から任意で有効化します。
+
+有効化の流れ:
+
+```text
+アカウント設定
+2段階認証の「有効化する」
+現在のパスワード確認
+QRコードを認証アプリで読み取り
+6桁コードを入力して「有効化を完了する」
+```
+
+有効化後は、通常ログインと Google ログインのどちらでも `/two-factor-challenge` に遷移し、認証コードまたはリカバリーコードの入力が必要になります。
+
+無効化やリカバリーコード再生成も `/account` の「2段階認証」から行います。無効化時も現在のパスワード確認を求めます。
+
+利用者が認証アプリとリカバリーコードの両方を失った場合、管理者は `/admin/users` のユーザー一覧から対象ユーザーの2FAをリセットできます。リセットすると、対象ユーザーの2FAシークレット、リカバリーコード、確認日時が削除され、次回ログイン時は2FAなしでログインできます。
+
+管理者画面でユーザー関連操作を行うには、管理者自身の2FA有効化が必要です。2FA未設定の管理者はユーザー一覧や予約投稿一覧の確認はできますが、メールアドレス変更、管理者権限変更、ユーザー削除、他ユーザーの2FAリセット、管理者画面からの予約投稿削除はできません。管理者が他ユーザーのつぶやきを保護・削除する場合も、管理者自身の2FA有効化が必要です。管理者が自分自身のメールアドレス変更や2FAリセットを管理者画面から行うこともできません。Seederで作成された固定管理者のメールアドレスと2FAは、他の管理者からも変更・リセットできません。
+
+管理者が他ユーザーのメールアドレスを変更した場合、対象ユーザーのメール認証状態は未認証に戻り、新しいメールアドレス宛に認証メールが送信されます。
+
+主な関連ファイル:
+
+| ファイル | 内容 |
+| --- | --- |
+| `config/fortify.php` | Fortifyの2段階認証機能を有効化。QRコード確認必須、操作前パスワード確認必須。 |
+| `app/Providers/FortifyServiceProvider.php` | Fortifyの2FA画面とログイン完了レスポンスをアプリ側に紐付け。 |
+| `app/Models/User.php` | `TwoFactorAuthenticatable` trait を追加し、2FA有効判定やQRコード生成を利用。 |
+| `routes/auth.php` | 2FAチャレンジ、有効化、確認、無効化、リカバリーコード再生成のルート。 |
+| `routes/web.php` | 管理者によるユーザー2FAリセットのルート。 |
+| `resources/views/account/index.blade.php` | 2FAの有効化、QRコード表示、確認、無効化UI。 |
+| `resources/views/admin/users/_rows.blade.php` | 管理者画面の2FA状態表示と2FAリセット操作。 |
+| `resources/views/auth/two-factor-challenge.blade.php` | ログイン時の2FAコード入力画面。 |
+| `database/migrations/2026_05_06_000001_add_two_factor_columns_to_users_table.php` | `users` テーブルへ2FA用カラムを追加。 |
+
 ## 管理者画面
 
 管理者画面にアクセスしたい際は
@@ -334,23 +374,18 @@ docker-compose exec app /bin/bash
 php artisan db:seed --class=UsersSeeder
 ```
 
-## 複数つぶやきをテスト的に入れたい場合
+`UsersSeeder` を再実行すると、Seeder固定管理者として選ばれたユーザーの以下の項目が `backend/.env` の設定値で上書きされます。
 
-以下のファイルで60件の画像リンク付き書き込みを追加できます。
-実施するたびに追記が可能。
+- ユーザー名
+- メールアドレス
+- パスワード
+- メール認証状態
+- 管理者フラグ
+- Seeder固定管理者フラグ
 
-設定ファイル：
+一方で、Google連携情報と2段階認証情報は `UsersSeeder` では更新・削除しません。既存のSeeder固定管理者でGoogle連携や2段階認証を有効化している場合、Seederを再実行してもそれらの設定は残ります。
 
-```bash
-database/seeeders/TweetsSeeder.php
-```
-
-適用(事前にUsersSeederを実施していること。)：
-
-```bash
-docker-compose exec app /bin/bash
-php artisan db:seed --class=TweetsSeeder
-```
+`UsersSeeder` が上書き対象にする既存ユーザーは、必ず `is_seed_admin = true` のユーザーです。`SEED_ADMIN_NAME` や `SEED_ADMIN_EMAIL` が通常ユーザーと重複している場合、その通常ユーザーをSeeder固定管理者へ昇格せず、Seeder処理はエラーで停止します。
 
 ## 一般ユーザーをテスト的に入れたい場合
 

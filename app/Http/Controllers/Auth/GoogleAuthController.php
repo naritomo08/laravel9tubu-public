@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
 use Throwable;
 
 class GoogleAuthController extends Controller
@@ -152,6 +153,17 @@ class GoogleAuthController extends Controller
             return redirect()
                 ->route('register')
                 ->withErrors(['google' => '連携済みのアカウントが見つかりません。先に通常登録してからGoogle連携してください。']);
+        }
+
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            $request->session()->put([
+                'login.id' => $user->getKey(),
+                'login.remember' => true,
+            ]);
+
+            event(new TwoFactorAuthenticationChallenged($user));
+
+            return redirect()->route('two-factor.login');
         }
 
         Auth::login($user, true);

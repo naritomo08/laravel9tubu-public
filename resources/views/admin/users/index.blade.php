@@ -19,6 +19,11 @@
         @if (session('error'))
             <x-alert.error>{{ session('error') }}</x-alert.error>
         @endif
+        @unless (Auth::user()->hasEnabledTwoFactorAuthentication())
+            <x-alert.error>
+                ユーザー関連操作を行うには、管理者自身の2段階認証を有効化してください。2段階認証はアカウント設定から有効化できます。
+            </x-alert.error>
+        @endunless
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
         <section class="mb-8">
@@ -64,11 +69,14 @@
                         </tr>
                     </thead>
                     <tbody data-admin-scheduled-tweets-body>
-                        @include('admin.users._scheduled_tweets', ['scheduledTweets' => $scheduledTweets])
+                        @include('admin.users._scheduled_tweets', [
+                            'scheduledTweets' => $scheduledTweets,
+                            'canManageScheduledTweets' => $canManageScheduledTweets,
+                        ])
                     </tbody>
                 </table>
             </div>
-            <p class="text-sm text-gray-500 mt-2 dark:text-gray-400">予約時刻を過ぎた投稿は自動更新で一覧から外れます。</p>
+            <p class="text-sm text-gray-500 mt-2 dark:text-gray-400">予約時刻を過ぎた投稿は自動更新で一覧から外れます。予約投稿を操作するには、管理者自身の2段階認証を有効化してください。</p>
         </section>
 
         <section>
@@ -82,6 +90,7 @@
                         <th class="py-2 px-4 border-b dark:border-gray-700">メール認証</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">通知メール</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">Google連携</th>
+                        <th class="py-2 px-4 border-b dark:border-gray-700">2FA</th>
                         <th class="py-2 px-4 border-b dark:border-gray-700">操作</th>
                     </tr>
                 </thead>

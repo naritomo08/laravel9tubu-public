@@ -8,6 +8,7 @@
         "php": "^8.3",
         "guzzlehttp/guzzle": "^7.2",
         "laravel-lang/lang": "^15.29",
+        "laravel/fortify": "^1.37",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0"
     },

@@ -16,9 +16,18 @@ class DeleteController extends Controller
         $tweetId = (int) $request->route('tweetId');
         $user = $request->user();
         $tweet = Tweet::where('id', $tweetId)->firstOrFail();
+        $isOwnTweet = $tweetService->checkOwnTweet($user->id, $tweetId);
         $canDeleteSeededTweet = $tweet->is_seeded
             && $user->is_seed_admin
             && $tweet->user_id === $user->id;
+
+        if ($user->is_admin && $this->isAdminUsersReturnUrl($request->input('return_url')) && ! $user->hasEnabledTwoFactorAuthentication()) {
+            return back()->with('feedback.error', '管理者画面の予約投稿を操作するには、管理者自身の2段階認証を有効化してください');
+        }
+
+        if ($user->is_admin && ! $isOwnTweet && ! $user->hasEnabledTwoFactorAuthentication()) {
+            return back()->with('feedback.error', '他ユーザーのつぶやきを削除するには、管理者自身の2段階認証を有効化してください');
+        }
 
         if ($tweet->is_protected && ! $user->is_seed_admin) {
             return back()->with('feedback.error', '保護されたつぶやきは削除できません');
@@ -29,7 +38,7 @@ class DeleteController extends Controller
         }
 
         // 管理者は全ての投稿を削除可能
-        if (! $user->is_admin && ! $tweetService->checkOwnTweet($user->id, $tweetId)) {
+        if (! $user->is_admin && ! $isOwnTweet) {
             throw new AccessDeniedHttpException;
         }
         $tweetService->deleteTweet($tweetId, $canDeleteSeededTweet);
@@ -61,5 +70,21 @@ class DeleteController extends Controller
         }
 
         return $returnUrl;
+    }
+
+    private function isAdminUsersReturnUrl(?string $returnUrl): bool
+    {
+        if (! $returnUrl) {
+            return false;
+        }
+
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+        $returnHost = parse_url($returnUrl, PHP_URL_HOST);
+
+        if ($returnHost !== null && $returnHost !== $appHost) {
+            return false;
+        }
+
+        return (parse_url($returnUrl, PHP_URL_PATH) ?: '') === '/admin/users';
     }
 }

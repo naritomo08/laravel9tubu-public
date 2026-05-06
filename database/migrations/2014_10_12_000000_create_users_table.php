@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('google_email')->nullable();
             $table->text('google_avatar')->nullable();
             $table->timestamp('google_connected_at')->nullable();
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->timestamp('deletion_requested_at')->nullable()->index();
             $table->timestamps();

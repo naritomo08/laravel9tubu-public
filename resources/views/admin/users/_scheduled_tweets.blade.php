@@ -1,17 +1,20 @@
 @forelse($scheduledTweets as $tweet)
+    @php($canManageScheduledTweets = $canManageScheduledTweets ?? false)
     <tr>
         <td class="py-2 px-4 border-b dark:border-gray-700">{{ $tweet->user->name }}</td>
         <td class="py-2 px-4 border-b dark:border-gray-700">{{ $tweet->content }}</td>
         <td class="py-2 px-4 border-b whitespace-nowrap dark:border-gray-700">{{ $tweet->scheduled_at }}</td>
         <td class="py-2 px-4 border-b text-center dark:border-gray-700">
-            <form action="{{ route('tweet.delete', ['tweetId' => $tweet->id]) }}" method="post" onclick="return confirm('削除してもよろしいですか?');">
-                @method('DELETE')
-                @csrf
-                <input type="hidden" name="return_url" value="{{ route('admin.users.index', [], false) }}">
-                <button type="submit" class="text-red-600 underline hover:text-red-700">
-                    削除
-                </button>
-            </form>
+            @if($canManageScheduledTweets)
+                <form action="{{ route('tweet.delete', ['tweetId' => $tweet->id]) }}" method="post" onclick="return confirm('削除してもよろしいですか?');">
+                    @method('DELETE')
+                    @csrf
+                    <input type="hidden" name="return_url" value="{{ route('admin.users.index', [], false) }}">
+                    <button type="submit" class="text-red-600 underline hover:text-red-700">
+                        削除
+                    </button>
+                </form>
+            @endif
         </td>
     </tr>
 @empty
