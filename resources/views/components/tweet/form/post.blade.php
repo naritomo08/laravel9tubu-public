@@ -6,7 +6,7 @@
 @php
     $tweetMaxLength = config('tweet.content_max_length');
 @endphp
-<div class="p-4">
+<div class="p-4" data-requires-verified-email>
     <form action="{{ route('tweet.create') }}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="page" value="{{ $currentPage }}">

@@ -50,7 +50,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-            ->middleware(['signed', 'throttle:6,1'])
+            ->middleware(['signed', 'throttle:email-verification'])
             ->name('verification.verify');
 
 Route::middleware('auth')->group(function () {
@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('email/verification-status', function () {
         return response()->json([
             'verified' => request()->user()->hasVerifiedEmail(),
+            'pending_initial_email_verification' => request()->user()->isPendingInitialEmailVerification(),
         ]);
     })->name('verification.status');
 

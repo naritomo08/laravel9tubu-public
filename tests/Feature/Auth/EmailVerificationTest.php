@@ -35,12 +35,18 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($unverifiedUser)
             ->getJson(route('verification.status'))
             ->assertOk()
-            ->assertJson(['verified' => false]);
+            ->assertJson([
+                'verified' => false,
+                'pending_initial_email_verification' => true,
+            ]);
 
         $this->actingAs($verifiedUser)
             ->getJson(route('verification.status'))
             ->assertOk()
-            ->assertJson(['verified' => true]);
+            ->assertJson([
+                'verified' => true,
+                'pending_initial_email_verification' => false,
+            ]);
     }
 
     public function test_tweet_screen_watches_email_verification_for_unverified_user()
@@ -54,6 +60,31 @@ class EmailVerificationTest extends TestCase
             ->assertOk()
             ->assertSee('data-email-verification-watch', false)
             ->assertSee(route('verification.status', [], false), false);
+    }
+
+    public function test_tweet_screen_watches_email_verification_for_verified_user()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertSee('data-email-verification-watch', false)
+            ->assertSee('data-is-verified="true"', false)
+            ->assertSee('data-requires-verified-email', false);
+    }
+
+    public function test_tweet_screen_does_not_render_post_form_for_unverified_user()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tweet.index'))
+            ->assertOk()
+            ->assertDontSee('data-tweet-input', false)
+            ->assertSee('data-is-verified="false"', false);
     }
 
     public function test_tweet_screen_warns_initial_unverified_user_about_account_deletion()
@@ -153,6 +184,27 @@ class EmailVerificationTest extends TestCase
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
         $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+    }
+
+    public function test_email_verification_links_are_not_throttled_by_shared_ip_noise()
+    {
+        $users = User::factory()->count(7)->create([
+            'email_verified_at' => null,
+        ]);
+
+        foreach ($users as $user) {
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id, 'hash' => sha1($user->email)]
+            );
+
+            $this->get($verificationUrl)->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+        }
+
+        $users->each(function (User $user) {
+            $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        });
     }
 
     public function test_email_can_be_verified_when_request_host_differs_from_generated_link()

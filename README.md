@@ -200,7 +200,7 @@ php artisan dusk
 - `php artisan dusk`
   - `tests/Browser`
 
-#### php artisan test で実行されるテスト(166テスト)
+#### php artisan test で実行されるテスト(169テスト)
 
 ```bash
 tests/Unit/ExampleTest.php
@@ -242,11 +242,11 @@ tests/Feature/Tweet/UpdateTest.php
 | `tests/Unit/Services/TweetServiceTest.php` | `TweetService::checkOwnTweet` の自分の投稿判定を検証。 |
 | `tests/Unit/Services/UserDeletionServiceTest.php` | ユーザー削除時に本人のつぶやき、いいね、つぶやき画像が削除され、他ユーザーのデータが残ること、削除受付時に削除予定フラグを立てて削除Jobを一度だけ投入することを検証。 |
 | `tests/Unit/View/Components/Tweet/FormattedContentTest.php` | ツイート本文表示コンポーネントのURLリンク化、改行反映、HTMLエスケープを検証。 |
-| `tests/Feature/AccountTest.php` | アカウント設定の表示制御、プロフィール更新、メール変更時の再認証、パスワード更新、通知メール設定、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会時に削除受付フラグを立てて削除Jobを投入しログアウトすることを検証。 |
-| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示、管理者自身の2FA有効時だけ可能な他ユーザーのメールアドレス変更と認証メール送信、自分自身とSeeder固定管理者のメール変更拒否、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の動的取得、予約投稿一覧の表示・動的取得、管理者自身の2FA有効時だけ可能な管理者画面からの予約投稿削除、通知メール設定表示、Google連携表示、2FA有効状態表示、管理者ステータスAPIの管理者権限・2FA状態返却、管理者自身の2FA未設定時のユーザー関連操作拒否、管理者による他ユーザーの2FAリセット、自分自身とSeeder固定管理者の2FAリセット拒否、非管理者の操作拒否を検証。 |
+| `tests/Feature/AccountTest.php` | アカウント設定リンク・画面のメール認証済みユーザー限定表示、プロフィール更新、メール変更時の再認証、パスワード更新、管理者本人の退会不可、通知メール設定、Google連携欄、本人統計、本人の予約投稿一覧の表示・動的取得・編集・削除、退会時に削除受付フラグを立てて削除Jobを投入しログアウトすることを検証。 |
+| `tests/Feature/Admin/UserManagementTest.php` | 管理者画面のメールアドレス表示、管理者自身の2FA有効時だけ可能な他ユーザーのメールアドレス変更と認証メール送信、自分自身とSeeder固定管理者のメール変更拒否、複数管理者の昇格/降格、自己権限変更拒否、Seeder固定管理者の維持・設定値反映・重複時の停止、管理者削除拒否、一般ユーザー削除受付時の削除Job投入、集計・ユーザー一覧の表示と動的取得、予約投稿一覧の表示・動的取得、管理者自身の2FA有効時だけ可能な管理者画面からの予約投稿削除、通知メール設定表示、Google連携表示、2FA有効状態表示、管理者ナビ・管理者画面アクセス監視、管理者ステータスAPIの管理者権限・2FA状態返却、管理者自身の2FA未設定時のユーザー関連操作拒否、管理者による他ユーザーの2FAリセット、自分自身とSeeder固定管理者の2FAリセット拒否、非管理者の操作拒否を検証。 |
 | `tests/Feature/Auth/AuthenticationTest.php` | ログイン画面表示、正しい認証でログイン成功、2FA有効ユーザーが2FAチャレンジへ遷移すること、リカバリーコードで2FAログインを完了できること、2FAチャレンジのレート制限がユーザー単位で分離されること、2FA完了後も非管理者が古い管理画面遷移先へ戻されないこと、誤パスワードおよび削除受付済みユーザーのログイン失敗を検証。 |
 | `tests/Feature/Auth/GoogleAuthTest.php` | Google連携、連携済みアカウントでのGoogleログイン、未連携メールでの拒否、連携解除、Google API失敗時のエラー表示を検証。 |
-| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証ユーザーの監視表示、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
+| `tests/Feature/Auth/EmailVerificationTest.php` | メール認証画面、認証状態API、未認証/認証済みユーザーの監視表示、未認証ユーザーでは投稿フォームを表示しないこと、登録直後とメール変更後で未認証通知の削除警告表示が切り替わること、署名付きURLでの認証成功、ログインなし・別ユーザー認証中・共有IPの連続アクセス・ホスト差異ありでも認証できること、無効な認証リンクでは認証されないことを検証。 |
 | `tests/Feature/Auth/PasswordConfirmationTest.php` | パスワード確認画面表示、正しい/誤ったパスワードでの確認結果を検証。 |
 | `tests/Feature/Auth/PasswordResetTest.php` | 再設定リンク送信、再設定画面表示、トークンを使ったパスワード再設定を検証。 |
 | `tests/Feature/Auth/RegistrationTest.php` | ユーザー登録画面表示、新規登録後の認証状態・遷移先、認証済みユーザーへの紹介メール送信を検証。 |

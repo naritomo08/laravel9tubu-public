@@ -15,7 +15,30 @@ export const setupEmailVerificationWatch = () => {
 
     const statusUrl = target.dataset.statusUrl;
     const verifiedUrl = target.dataset.verifiedUrl || window.location.href;
+    const verificationSendUrl = target.dataset.verificationSendUrl;
+    const csrfToken = target.dataset.csrfToken;
     let checking = false;
+
+    const warningHtml = (isPendingInitialEmailVerification) => `
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" data-email-verification-warning>
+            ${isPendingInitialEmailVerification
+                ? `メール認証が完了していません。登録時のメールアドレスに届いた認証メールをご確認ください。<br>
+                    <span class="text-red-600 font-bold">※登録から1時間以内にメール認証が完了しない場合、アカウントは自動的に削除されます。</span>`
+                : 'メール認証が完了していません。新しいメールアドレスに届いた認証メールをご確認ください。'}
+            <form method="POST" action="${verificationSendUrl || '/email/verification-notification'}">
+                <input type="hidden" name="_token" value="${csrfToken || ''}">
+                <button type="submit" class="underline text-blue-600">認証メールを再送する</button>
+            </form>
+        </div>
+    `;
+
+    const showVerificationWarning = (isPendingInitialEmailVerification) => {
+        target.innerHTML = warningHtml(isPendingInitialEmailVerification);
+    };
+
+    const setVerificationState = (verified) => {
+        document.documentElement.dataset.emailVerificationState = verified ? 'verified' : 'unverified';
+    };
 
     const checkVerification = async () => {
         if (checking) {
@@ -42,7 +65,22 @@ export const setupEmailVerificationWatch = () => {
             const data = await response.json();
 
             if (data.verified) {
-                window.location.assign(verifiedUrl);
+                if (target.dataset.isVerified !== 'true') {
+                    window.location.assign(verifiedUrl);
+                }
+
+                target.dataset.isVerified = 'true';
+                setVerificationState(true);
+                target.innerHTML = '';
+
+                return;
+            }
+
+            target.dataset.isVerified = 'false';
+            setVerificationState(false);
+
+            if (!target.querySelector('[data-email-verification-warning]')) {
+                showVerificationWarning(Boolean(data.pending_initial_email_verification));
             }
         } finally {
             checking = false;
@@ -70,7 +108,7 @@ export const setupAdminNavWatch = () => {
 
     const statusUrl = target.dataset.statusUrl;
     const adminUrl = target.dataset.adminUrl;
-    const twoFactorWarning = document.querySelector('[data-admin-two-factor-warning]');
+    const twoFactorWarningTarget = document.querySelector('[data-admin-2fa-warning-watch]');
 
     if (!statusUrl || !adminUrl) {
         return;
@@ -87,6 +125,24 @@ export const setupAdminNavWatch = () => {
                 管理者画面
             </a>
         `;
+    };
+
+    const renderTwoFactorWarning = () => {
+        if (!twoFactorWarningTarget || twoFactorWarningTarget.querySelector('[data-admin-two-factor-warning]')) {
+            return;
+        }
+
+        twoFactorWarningTarget.innerHTML = `
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" data-admin-two-factor-warning>
+                管理者自身の2段階認証が未設定のため、他ユーザーのつぶやきの編集・削除はできません。2段階認証はアカウント設定から有効化できます。
+            </div>
+        `;
+    };
+
+    const clearTwoFactorWarning = () => {
+        if (twoFactorWarningTarget) {
+            twoFactorWarningTarget.innerHTML = '';
+        }
     };
 
     const checkAdminStatus = async () => {
@@ -120,8 +176,10 @@ export const setupAdminNavWatch = () => {
                 target.innerHTML = '';
             }
 
-            if (data.has_two_factor_enabled && twoFactorWarning) {
-                twoFactorWarning.remove();
+            if (data.is_admin && !data.has_two_factor_enabled) {
+                renderTwoFactorWarning();
+            } else {
+                clearTwoFactorWarning();
             }
         } finally {
             checking = false;
