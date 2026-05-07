@@ -61,12 +61,6 @@ return new class extends Migration
             return;
         }
 
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE UNIQUE INDEX unique_admin ON users (is_admin) WHERE is_admin = true');
-
-            return;
-        }
-
         DB::statement('CREATE UNIQUE INDEX unique_admin ON users ((CASE WHEN is_admin = 1 THEN 1 ELSE NULL END))');
     }
 
