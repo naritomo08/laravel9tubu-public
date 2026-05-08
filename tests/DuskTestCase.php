@@ -64,7 +64,7 @@ abstract class DuskTestCase extends BaseTestCase
      */
     protected function baseUrl()
     {
-        return 'http://web';  // 'web' は Docker Compose のサービス名
+        return rtrim(env('DUSK_APP_URL', 'http://web'), '/');  // 'web' は Docker Compose のサービス名
     }
 
     /**
