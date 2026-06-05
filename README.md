@@ -72,21 +72,6 @@ php artisan db:seed --class=UsersSeeder
 
 http://127.0.0.1:8080/tweet
 
-### 利用規約・プライバシーポリシー・お問い合わせ
-
-利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換し、変換後のHTMLをMarkdown内容のハッシュ付きキーでキャッシュします。
-
-| 表示ページ | Markdownファイル |
-| --- | --- |
-| `/terms` | `backend/resources/markdown/terms.md` |
-| `/privacy` | `backend/resources/markdown/privacy.md` |
-
-お問い合わせはログイン後に表示される `/contact` から送信できます。ログイン中ユーザーのユーザー名とメールアドレスを固定表示し、問い合わせ内容を入力すると、管理者宛にメールがキューで送信されます。
-
-管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `admin@tubuyaki.com` 宛に送信されます。
-
-本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。Markdownの内容が変わるとキャッシュキーも変わるため、通常はアプリケーションキャッシュの削除は不要です。
-
 ### adminer(DB管理ツール)
 
 http://127.0.0.1:8081
@@ -473,6 +458,21 @@ TWEET_CONTENT_MAX_LENGTH=200
 
 docker-compose build && docker-compose up -d
 ```
+
+## 利用規約・プライバシーポリシー・お問い合わせ
+
+利用規約とプライバシーポリシーはMarkdownファイルで管理しています。画面表示時にMarkdownからHTMLへ変換し、変換後のHTMLをMarkdown内容のハッシュ付きキーでキャッシュします。
+
+| 表示ページ | Markdownファイル |
+| --- | --- |
+| `/terms` | `backend/resources/markdown/terms.md` |
+| `/privacy` | `backend/resources/markdown/privacy.md` |
+
+お問い合わせはログイン後に表示される `/contact` から送信できます。ログイン中ユーザーのユーザー名とメールアドレスを固定表示し、問い合わせ内容を入力すると、管理者宛にメールがキューで送信されます。
+
+管理者アドレスを変更したい場合は、`backend/.env` の `ADMIN_EMAIL` に送信先メールアドレスを指定してください。未設定時は `admin@tubuyaki.com` 宛に送信されます。
+
+本文を変更する場合は、該当するMarkdownファイルを編集してビルドしてください。Markdownの内容が変わるとキャッシュキーも変わるため、通常はアプリケーションキャッシュの削除は不要です。
 
 ## npm依存の脆弱性対応
 
