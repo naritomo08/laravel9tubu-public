@@ -337,3 +337,7 @@ vi backend/app/Console/Kernel.php
 >この構成では `scheduler` コンテナが `php artisan schedule:work` を常駐実行し、
 >`queue` コンテナが `php artisan queue:work` を常駐実行します。
 >そのため、`Kernel.php` に登録したスケジュール実行と、`ShouldQueue` のメール送信が自動で流れます。
+
+## 関連Qiita記事
+
+- [Laravel13でつぶやきサイトを作ってみる。](https://qiita.com/naritomo08/items/c0f139fa19295b9a0319)
